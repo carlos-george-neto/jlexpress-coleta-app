@@ -28,7 +28,7 @@ Princípios de Clean Code. Favorecer designs simples (YAGNI — You Aren't Gonna
 - Sem lógica de negócio dentro de componentes de UI
 - Separação clara entre regras de negócio e componentes de interface
 
-## III. Pilha Tecnológica
+## III. Pilha Tecnológica (Tech Stack)
 
 - **Linguagem**: TypeScript (latest)
 - **Framework**: Next.js (App Router)
