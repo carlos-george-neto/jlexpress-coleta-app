@@ -79,6 +79,7 @@ Permitir administração de usuários do sistema.
 
 ### Tasks
 
+- Criar script de insert usuário root (admin) para ser executado no Supabase
 - Criar tabela de usuários
 - Criar endpoint de cadastro
 - Criar tela administrativa de cadastro
