@@ -25,11 +25,11 @@
 
 **Dependências**: Nenhuma — esta é a fase inicial
 
-- [ ] T001 Criar estrutura de pastas conforme plano de implementação em `src/`
-- [ ] T002 [P] Configurar variáveis de ambiente em `.env.local` e `.env.example` (Supabase URL, ANON_KEY, SERVICE_ROLE_KEY)
-- [ ] T003 [P] Instalar dependências do projeto: `@supabase/supabase-js`, `react-hook-form`, `zod`, `@hookform/resolvers`, `framer-motion`
-- [ ] T004 [P] Configurar TypeScript strict mode e resolver imports em `tsconfig.json`
-- [ ] T005 [P] Configurar ESLint e Prettier para padrão de projeto em `eslint.config.mjs`
+- [x] T001 Criar estrutura de pastas conforme plano de implementação em `src/`
+- [x] T002 [P] Configurar variáveis de ambiente em `.env.local` e `.env.example` (Supabase URL, ANON_KEY, SERVICE_ROLE_KEY)
+- [x] T003 [P] Instalar dependências do projeto: `@supabase/supabase-js`, `react-hook-form`, `zod`, `@hookform/resolvers`, `framer-motion`
+- [x] T004 [P] Configurar TypeScript strict mode e resolver imports em `tsconfig.json`
+- [x] T005 [P] Configurar ESLint e Prettier para padrão de projeto em `eslint.config.mjs`
 
 **Checkpoint**: Setup básico concluído — estrutura de pastas criada e dependências instaladas
 
@@ -41,23 +41,23 @@
 
 **⚠️ CRÍTICO**: Nenhuma história de usuário pode começar até que esta fase esteja 100% completa
 
-- [ ] T006 [P] Criar cliente Supabase para ambiente browser em `src/lib/supabase/client.ts`
-- [ ] T007 [P] Criar cliente Supabase para ambiente server em `src/lib/supabase/server.ts`
-- [ ] T008 [P] Criar schemas Zod para validação em `src/lib/schemas/auth.ts` (email, password, validações)
-- [ ] T009 [P] Criar tipos TypeScript compartilhados em `src/lib/types/auth.ts` (User, AuthState, LoginInput, etc.)
-- [ ] T010 Criar middleware de autenticação em `src/middleware.ts` para proteção de rotas (verifica JWT/sessão)
-- [ ] T011 [P] Criar componentes UI base em `src/components/ui/`:
-  - [ ] Button.tsx (primário, secundário, com loading)
-  - [ ] Input.tsx (com suporte a erro e validação visual)
-  - [ ] FormField.tsx (wrapper para validação)
-  - [ ] Card.tsx (container para formulário)
-  - [ ] Typography.tsx (títulos e textos)
-- [ ] T012 [P] Criar layout base em `src/app/layout.tsx` com estrutura HTML5 semântica
-- [ ] T013 [P] Criar funções auxiliares de autenticação em `src/lib/supabase/auth.ts`:
-  - `signIn(email, password)`
-  - `signOut()`
-  - `getCurrentUser()`
-  - `refreshSession()`
+- [x] T006 [P] Criar cliente Supabase para ambiente browser em `src/lib/supabase/client.ts`
+- [x] T007 [P] Criar cliente Supabase para ambiente server em `src/lib/supabase/server.ts`
+- [x] T008 [P] Criar schemas Zod para validação em `src/lib/schemas/auth.ts` (email, password, validações)
+- [x] T009 [P] Criar tipos TypeScript compartilhados em `src/lib/types/auth.ts` (User, AuthState, LoginInput, etc.)
+- [x] T010 Criar middleware de autenticação em `src/middleware.ts` para proteção de rotas (verifica JWT/sessão)
+- [x] T011 [P] Criar componentes UI base em `src/components/ui/`:
+  - [x] Button.tsx (primário, secundário, com loading)
+  - [x] Input.tsx (com suporte a erro e validação visual)
+  - [x] FormField.tsx (wrapper para validação)
+  - [x] Card.tsx (container para formulário)
+  - [x] Typography.tsx (títulos e textos)
+- [x] T012 [P] Criar layout base em `src/app/layout.tsx` com estrutura HTML5 semântica
+- [x] T013 [P] Criar funções auxiliares de autenticação em `src/lib/supabase/auth.ts`:
+  - [x] `signIn(email, password)`
+  - [x] `signOut()`
+  - [x] `getCurrentUser()`
+  - [x] `refreshSession()`
 
 **Checkpoint**: Infraestrutura de autenticação pronta — clientes Supabase, validações, tipos, middleware e componentes base criados
 
@@ -71,46 +71,46 @@
 
 ### Implementação para User Story 1
 
-- [ ] T014 [P] [US1] Criar rota de autenticação em `src/app/api/auth/login/route.ts`:
+- [x] T014 [P] [US1] Criar rota de autenticação em `src/app/api/auth/login/route.ts`:
   - POST handler que valida email/senha com Supabase
   - Retorna JWT em cookie httpOnly
   - Trata erros (email inválido, senha incorreta, servidor indisponível)
   - Segue contrato em `contracts/api-contracts.md`
 
-- [ ] T015 [P] [US1] Criar componente LoginForm em `src/components/auth/LoginForm.tsx`:
+- [x] T015 [P] [US1] Criar componente LoginForm em `src/components/auth/LoginForm.tsx`:
   - Integra react-hook-form com Zod schema
   - Campos: email, password
   - Estado de loading durante submit
   - Exibe mensagens de erro genéricas ("E-mail ou senha inválidos")
   - Desabilita botão enquanto há erros
 
-- [ ] T016 [US1] Criar página de login em `src/app/(auth)/login/page.tsx`:
+- [x] T016 [US1] Criar página de login em `src/app/(auth)/login/page.tsx`:
   - Redireciona para dashboard se usuário já autenticado (via middleware)
   - Exibe LoginForm
   - Layout centralizado no desktop, full-width no mobile
   - Responsivo (mobile-first, 320px+)
 
-- [ ] T017 [P] [US1] Criar grupo de layout `(auth)` em `src/app/(auth)/layout.tsx`:
+- [x] T017 [P] [US1] Criar grupo de layout `(auth)` em `src/app/(auth)/layout.tsx`:
   - Layout específico para rotas de autenticação
   - Sem header/navegação
   - Background e estilo consistente
 
-- [ ] T018 [US1] Criar página dashboard em `src/app/dashboard/page.tsx`:
+- [x] T018 [US1] Criar página dashboard em `src/app/dashboard/page.tsx`:
   - Página protegida (middleware redireciona para login se não autenticado)
   - Exibe dados do usuário autenticado
   - Botão de logout
   - Confirma que sessão é mantida após recarga
 
-- [ ] T019 [P] [US1] Adicionar função de login em `src/lib/supabase/auth.ts`:
+- [x] T019 [P] [US1] Adicionar função de login em `src/lib/supabase/auth.ts`:
   - `loginWithEmail(email, password)` — integra com Supabase signInWithPassword
   - Trata erros e retorna response tipado
 
-- [ ] T020 [P] [US1] Implementar persistência de sessão:
+- [x] T020 [P] [US1] Implementar persistência de sessão:
   - Verificar JWT em cookie ao carregar aplicação
   - Renovar token via `POST /api/auth/refresh` se próximo de expirar
   - Manter usuário logado após reload de página
 
-- [ ] T021 [US1] Testar fluxo completo (manual):
+- [x] T021 [US1] Testar fluxo completo (manual):
   - Login com credenciais válidas → redirecionado para dashboard
   - Login com email incorreto → mensagem "E-mail ou senha inválidos"
   - Login com senha incorreta → mensagem "E-mail ou senha inválidos"
@@ -128,12 +128,12 @@
 
 ### Implementação para User Story 2
 
-- [ ] T022 [P] [US2] Expandir schema Zod em `src/lib/schemas/auth.ts`:
+- [x] T022 [P] [US2] Expandir schema Zod em `src/lib/schemas/auth.ts`:
   - Email: validação RFC 5322 simplificada, mensagem "Formato de e-mail inválido"
   - Senha: mínimo 8 caracteres, pelo menos 1 maiúscula, 1 minúscula, 1 número
   - Mensagens de erro em pt-BR para cada validação
 
-- [ ] T023 [US2] Atualizar LoginForm em `src/components/auth/LoginForm.tsx`:
+- [x] T023 [US2] Atualizar LoginForm em `src/components/auth/LoginForm.tsx`:
   - Validação em tempo real enquanto usuário digita (via react-hook-form watch)
   - Exibir ícones de erro/sucesso inline no Input
   - Mostrar mensagens específicas abaixo de cada campo:
@@ -142,18 +142,18 @@
   - Desabilitar botão "Entrar" enquanto houver erros (fórmula: `!isValid || isLoading`)
   - Botão habilitado apenas se email e senha são válidos
 
-- [ ] T024 [P] [US2] Criar componente FieldError em `src/components/ui/FieldError.tsx`:
+- [x] T024 [P] [US2] Criar componente FieldError em `src/components/ui/FieldError.tsx`:
   - Exibe mensagem de erro com ícone de alerta
   - Estilo consistente com design system
   - Animação suave ao aparecer/desaparecer (Framer Motion)
 
-- [ ] T025 [P] [US2] Atualizar Input.tsx em `src/components/ui/Input.tsx`:
+- [x] T025 [P] [US2] Atualizar Input.tsx em `src/components/ui/Input.tsx`:
   - Aceitar prop `error?: string` e `success?: boolean`
   - Mostrar estado visual (border vermelha/verde)
   - Integrar com FieldError para mostrar mensagem
   - Acessibilidade: aria-invalid, aria-describedby
 
-- [ ] T026 [US2] Testar validações (manual):
+- [x] T026 [US2] Testar validações (manual):
   - Email vazio → mensagem "E-mail é obrigatório", botão desabilitado
   - Email inválido (ex: "usuario@") → mensagem "Formato de e-mail inválido", botão desabilitado
   - Senha vazia → mensagem "Senha é obrigatória", botão desabilitado
@@ -174,54 +174,54 @@
 
 ### Implementação para User Story 3
 
-- [ ] T027 [P] [US3] Criar rota de requisição de redefinição em `src/app/api/auth/reset-password/route.ts`:
+- [x] T027 [P] [US3] Criar rota de requisição de redefinição em `src/app/api/auth/reset-password/route.ts`:
   - POST handler que recebe email
   - Valida email e verifica se usuário existe (segurança: não revelar se email existe)
   - Chama Supabase `resetPasswordForEmail(email)`
   - Retorna mensagem genérica "E-mail de redefinição enviado"
 
-- [ ] T028 [P] [US3] Criar rota de callback de redefinição em `src/app/api/auth/callback/route.ts`:
+- [x] T028 [P] [US3] Criar rota de callback de redefinição em `src/app/api/auth/callback/route.ts`:
   - GET handler para callback de redefinição de senha
   - Processa token recebido via URL (Supabase envia no link)
   - Valida token e redireciona para página de redefinição se válido
   - Redireciona para login se token inválido/expirado
 
-- [ ] T029 [US3] Criar página de recuperação em `src/app/(auth)/forgot-password/page.tsx`:
+- [x] T029 [US3] Criar página de recuperação em `src/app/(auth)/forgot-password/page.tsx`:
   - Formulário com campo de email
   - Botão "Enviar Instruções"
   - Validação de email (reutilizar schema)
   - Mensagem de sucesso após envio
   - Link "Voltar para login"
 
-- [ ] T030 [US3] Criar componente ForgotPasswordForm em `src/components/auth/ForgotPasswordForm.tsx`:
+- [x] T030 [US3] Criar componente ForgotPasswordForm em `src/components/auth/ForgotPasswordForm.tsx`:
   - Integra react-hook-form com schema de email
   - Submit envia POST para `/api/auth/reset-password`
   - Exibe mensagem de sucesso com instruções
   - Trata erros de servidor
 
-- [ ] T031 [US3] Criar página de redefinição em `src/app/(auth)/reset-password/page.tsx`:
+- [x] T031 [US3] Criar página de redefinição em `src/app/(auth)/reset-password/page.tsx`:
   - Renderiza se token válido
   - Formulário com nova_senha e confirmar_senha
   - Valida senhas antes de submit
   - Submit envia PUT para Supabase `updateUser({ password: novaSenha })`
   - Mensagem de sucesso e redirecionamento para login
 
-- [ ] T032 [P] [US3] Criar componente ResetPasswordForm em `src/components/auth/ResetPasswordForm.tsx`:
+- [x] T032 [P] [US3] Criar componente ResetPasswordForm em `src/components/auth/ResetPasswordForm.tsx`:
   - Campos: nova_senha (8+ chars, maiúscula, minúscula, número)
   - Campo: confirmar_senha (deve ser igual a nova_senha)
   - Validação em tempo real
   - Ícone de visibilidade de senha (show/hide)
   - Submit envia dados ao servidor
 
-- [ ] T033 [P] [US3] Atualizar layout `(auth)` para incluir links de navegação:
+- [x] T033 [P] [US3] Atualizar layout `(auth)` para incluir links de navegação:
   - Link "Voltar para login" em página de recuperação
   - Link "Esqueceu sua senha?" na página de login
 
-- [ ] T034 [US3] Adicionar função de reset em `src/lib/supabase/auth.ts`:
+- [x] T034 [US3] Adicionar função de reset em `src/lib/supabase/auth.ts`:
   - `requestPasswordReset(email)` — chama Supabase
   - `resetPasswordWithToken(token, novaSenha)` — valida e atualiza senha
 
-- [ ] T035 [US3] Testar fluxo de recuperação (manual):
+- [x] T035 [US3] Testar fluxo de recuperação (manual):
   - Clicar "Esqueceu sua senha?" na página de login
   - Inserir email válido → mensagem "E-mail de redefinição enviado"
   - Simular clique em link do e-mail (usando token de teste)
@@ -242,33 +242,33 @@
 
 ### Implementação para User Story 4
 
-- [ ] T036 [P] [US4] Criar rota de logout em `src/app/api/auth/logout/route.ts`:
+- [x] T036 [P] [US4] Criar rota de logout em `src/app/api/auth/logout/route.ts`:
   - POST handler que recebe JWT do usuário
   - Revoga refresh token no Supabase (signOut)
   - Limpa cookies de autenticação (`__Secure-auth-token`, `__Secure-refresh-token`)
   - Retorna sucesso
   - Trata erro se usuário não autenticado (401)
 
-- [ ] T037 [P] [US4] Criar componente LogoutButton em `src/components/auth/LogoutButton.tsx`:
+- [x] T037 [P] [US4] Criar componente LogoutButton em `src/components/auth/LogoutButton.tsx`:
   - Botão "Sair" com ícone
   - POST para `/api/auth/logout` ao clicar
   - Exibe loading enquanto processa
   - Redireciona para `/login` após sucesso
   - Trata erros com mensagem para usuário
 
-- [ ] T038 [US4] Adicionar LogoutButton no dashboard em `src/app/dashboard/page.tsx`:
+- [x] T038 [US4] Adicionar LogoutButton no dashboard em `src/app/dashboard/page.tsx`:
   - Coloca botão em header ou menu do usuário
   - Exibe dados do usuário autenticado com opção de logout
 
-- [ ] T039 [P] [US4] Atualizar Header/Navigation em `src/components/layout/Header.tsx`:
+- [x] T039 [P] [US4] Atualizar Header/Navigation em `src/components/layout/Header.tsx`:
   - Renderiza conteúdo diferente para usuário autenticado vs não autenticado
   - Se autenticado: exibe menu com LogoutButton
   - Se não autenticado: exibe link para login
 
-- [ ] T040 [P] [US4] Adicionar função de logout em `src/lib/supabase/auth.ts`:
+- [x] T040 [P] [US4] Adicionar função de logout em `src/lib/supabase/auth.ts`:
   - `logout()` — chama Supabase signOut e limpa estado local
 
-- [ ] T041 [US4] Testar logout (manual):
+- [x] T041 [US4] Testar logout (manual):
   - Usuário autenticado clica "Sair"
   - Redireciona para `/login`
   - Tenta acessar URL protegida manualmente → redireciona para login

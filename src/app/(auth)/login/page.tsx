@@ -1,17 +1,18 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
+import { Card } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
+import { LoginForm } from "@/components/auth/LoginForm";
 
-export default function Home() {
+export default function LoginPage() {
   const router = useRouter();
-  const [isChecking, setIsChecking] = useState(true);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
-    // Verificar se usuário está autenticado
+    // Verificar se usuário já está autenticado
     const checkAuth = async () => {
       try {
         const {
@@ -19,24 +20,20 @@ export default function Home() {
         } = await supabase.auth.getUser();
 
         if (user) {
-          // Se autenticado, redirecionar para dashboard
+          // Se já autenticado, redirecionar para dashboard
           router.push("/dashboard");
-        } else {
-          // Se não autenticado, redirecionar para login
-          router.push("/login");
         }
       } catch (error) {
         console.error("Erro ao verificar autenticação:", error);
-        router.push("/login");
       } finally {
-        setIsChecking(false);
+        setIsCheckingAuth(false);
       }
     };
 
     checkAuth();
   }, [router]);
 
-  if (isChecking) {
+  if (isCheckingAuth) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Typography>Carregando...</Typography>
@@ -44,5 +41,16 @@ export default function Home() {
     );
   }
 
-  return null;
+  return (
+    <div className="space-y-6">
+      <div className="text-center space-y-2">
+        <Typography variant="h1">JLExpress Coleta</Typography>
+        <Typography variant="small">Faça login para continuar</Typography>
+      </div>
+
+      <Card className="p-6">
+        <LoginForm />
+      </Card>
+    </div>
+  );
 }
