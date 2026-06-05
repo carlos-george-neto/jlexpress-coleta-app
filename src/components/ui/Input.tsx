@@ -33,6 +33,7 @@ export function Input({
       <div className="relative">
         <input
           className={`${baseStyles} ${stateStyles} ${className}`}
+          suppressHydrationWarning
           {...props}
         />
         {/* Ícone de status */}
