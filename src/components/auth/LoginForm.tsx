@@ -4,16 +4,15 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginInput } from "@/lib/schemas/auth";
+import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { FormField } from "@/components/ui/FormField";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 export function LoginForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
-  const router = useRouter();
 
   const {
     register,
@@ -47,8 +46,17 @@ export function LoginForm() {
         return;
       }
 
-      // Redirecionar para dashboard após login bem-sucedido
-      router.push("/dashboard");
+      // Persiste a sessão no localStorage do cliente antes de recarregar
+      if (result.accessToken && result.refreshToken) {
+        await supabase.auth.setSession({
+          access_token: result.accessToken,
+          refresh_token: result.refreshToken,
+        });
+      }
+
+      // Full reload garante que o SDK Supabase inicializa a partir do localStorage,
+      // evitando condição de corrida da navegação SPA com o estado interno do SDK.
+      window.location.href = "/dashboard";
     } catch (error) {
       console.error("Erro ao fazer login:", error);
       setServerError("Falha ao conectar ao servidor");

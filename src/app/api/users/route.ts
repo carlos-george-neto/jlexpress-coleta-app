@@ -1,18 +1,14 @@
 import { NextRequest } from "next/server";
-import { cookies } from "next/headers";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient, getServerUser } from "@/lib/supabase/server";
 import { createUserSchema, listUsersQuerySchema } from "@/lib/schemas/user";
 import { createUser, listUsers } from "@/lib/services/user.service";
 import { apiCreated, apiPaginated, ApiErrors } from "@/lib/api/response";
 
 async function getAdminUser() {
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const user = await getServerUser();
   if (!user) return null;
 
+  const supabase = await createServerSupabaseClient();
   const { data: profile } = await supabase
     .from("users")
     .select("id, role, is_active")

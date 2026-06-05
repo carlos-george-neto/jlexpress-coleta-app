@@ -93,6 +93,9 @@ export async function signIn(email: string, password: string) {
 
     return {
       success: true,
+      accessToken: data.session?.access_token,
+      refreshToken: data.session?.refresh_token,
+      role: userProfile.role,
       user: {
         id: data.user.id,
         email: data.user.email || "",
@@ -121,22 +124,24 @@ export async function signOut() {
 
 export async function getCurrentUser(): Promise<User | null> {
   try {
-    const { data, error } = await supabase.auth.getUser();
+    // getSession() lê direto da memória/localStorage sem requisição de rede,
+    // evitando condição de corrida após setSession() na tela de login.
+    const { data: { session } } = await supabase.auth.getSession();
 
-    if (error || !data.user) {
+    if (!session?.user) {
       return null;
     }
 
     // Buscar perfil do usuário na tabela public.users
-    const userProfile = await fetchUserProfile(data.user.id);
+    const userProfile = await fetchUserProfile(session.user.id);
 
     if (!userProfile || !userProfile.is_active) {
       return null;
     }
 
     return {
-      id: data.user.id,
-      email: data.user.email || "",
+      id: session.user.id,
+      email: session.user.email || "",
       fullName: userProfile.full_name,
       profileType: mapRoleToProfileType(userProfile.role),
       isActive: userProfile.is_active,

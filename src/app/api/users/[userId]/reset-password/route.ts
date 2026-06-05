@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient, getServerUser } from "@/lib/supabase/server";
 import { resetUserPassword } from "@/lib/services/user.service";
 import { apiMessage, ApiErrors } from "@/lib/api/response";
 
@@ -8,12 +8,10 @@ export async function POST(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getServerUser();
     if (!user) return ApiErrors.unauthorized();
 
+    const supabase = await createServerSupabaseClient();
     const { data: profile } = await supabase
       .from("users")
       .select("id, role, is_active")

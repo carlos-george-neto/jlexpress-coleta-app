@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getServerUser } from "@/lib/supabase/server";
 import { validateEmail } from "@/lib/services/user.service";
 import { ApiErrors } from "@/lib/api/response";
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getServerUser();
     if (!user) return ApiErrors.unauthorized();
 
     const { searchParams } = new URL(request.url);

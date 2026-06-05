@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase/client";
+import Link from "next/link";
+import { getCurrentUser } from "@/lib/supabase/auth";
 import { User } from "@/lib/types/auth";
 import { Card } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
@@ -14,27 +15,16 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Carregar dados do usuário autenticado
     const loadUser = async () => {
       try {
-        const {
-          data: { user: authUser },
-        } = await supabase.auth.getUser();
+        const currentUser = await getCurrentUser();
 
-        if (!authUser) {
-          // Se não autenticado, redirecionar para login
+        if (!currentUser) {
           router.push("/login");
           return;
         }
 
-        setUser({
-          id: authUser.id,
-          email: authUser.email || "",
-          profileType: "coletor",
-          isActive: true,
-          createdAt: authUser.created_at || new Date().toISOString(),
-          updatedAt: authUser.updated_at || new Date().toISOString(),
-        });
+        setUser(currentUser);
       } catch (error) {
         console.error("Erro ao carregar usuário:", error);
         router.push("/login");
@@ -103,6 +93,18 @@ export default function DashboardPage() {
               </Typography>
             </div>
           </div>
+
+          {user.profileType === "admin" && (
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <Link
+                href="/users"
+                className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
+                aria-label="Ir para a tela de gestão de usuários"
+              >
+                Gerenciar Usuários
+              </Link>
+            </div>
+          )}
         </Card>
       </main>
     </div>
