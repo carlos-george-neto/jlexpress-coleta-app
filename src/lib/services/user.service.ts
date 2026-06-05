@@ -309,7 +309,10 @@ export async function validateEmail(
   excludeUserId?: string
 ): Promise<boolean> {
   const emailLower = email.toLowerCase();
-  let query = supabaseAdmin.from("users").select("id").ilike("email", emailLower);
+  let query = supabaseAdmin.schema("public")
+      .from("users")
+      .select("id")
+      .ilike("email", emailLower);
 
   if (excludeUserId) {
     query = query.neq("id", excludeUserId);

@@ -23,20 +23,16 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
 
-    // Limpar cookies de autenticação
-    response.cookies.set("__Secure-auth-token", "", {
+    const clearCookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "strict" as const,
       maxAge: 0,
-    });
+    };
 
-    response.cookies.set("__Secure-refresh-token", "", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 0,
-    });
+    // Limpar cookies de autenticação
+    response.cookies.set("auth-token", "", clearCookieOptions);
+    response.cookies.set("refresh-token", "", clearCookieOptions);
 
     return response;
   } catch (error) {

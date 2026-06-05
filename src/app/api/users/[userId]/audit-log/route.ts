@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient, getServerUser } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { auditLogQuerySchema } from "@/lib/schemas/user";
 import { apiPaginated, ApiErrors } from "@/lib/api/response";
@@ -9,12 +9,10 @@ export async function GET(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getServerUser();
     if (!user) return ApiErrors.unauthorized();
 
+    const supabase = await createServerSupabaseClient();
     const { data: profile } = await supabase
       .from("users")
       .select("role, is_active")

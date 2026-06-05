@@ -38,18 +38,22 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         user: result.user,
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
       },
       { status: 200 }
     );
 
-    // Configurar cookies de autenticação
-    // Nota: Os cookies reais virão do Supabase, aqui é apenas exemplo
-    response.cookies.set("__Secure-auth-token", "placeholder", {
+    const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 60 * 60 * 24 * 7, // 7 dias
-    });
+      sameSite: "strict" as const,
+      maxAge: 60 * 60 * 24 * 7,
+    };
+
+    response.cookies.set("auth-token", result.accessToken!, cookieOptions);
+    response.cookies.set("user-role", result.role!, cookieOptions);
+    response.cookies.set("refresh-token", result.refreshToken!, cookieOptions);
 
     return response;
   } catch (error) {

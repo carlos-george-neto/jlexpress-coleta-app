@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient, getServerUser } from "@/lib/supabase/server";
 import { updateUserSchema } from "@/lib/schemas/user";
 import {
   getUserById,
@@ -10,9 +10,7 @@ import {
 import { apiSuccess, ApiErrors } from "@/lib/api/response";
 
 async function getAdminUser(supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>) {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getServerUser();
   if (!user) return null;
 
   const { data: profile } = await supabase

@@ -5,7 +5,7 @@ const adminRoutes = ["/admin", "/users"];
 const publicRoutes = ["/login", "/forgot-password", "/reset-password"];
 
 export function middleware(request: NextRequest) {
-  const authToken = request.cookies.get("__Secure-auth-token")?.value;
+  const authToken = request.cookies.get("auth-token")?.value;
   const pathname = request.nextUrl.pathname;
 
   // Admin API routes: require auth token
@@ -26,15 +26,15 @@ export function middleware(request: NextRequest) {
 
   // Rotas admin: verificar role via cookie (definido no login)
   if (authToken && adminRoutes.some((route) => pathname.startsWith(route))) {
-    const userRole = request.cookies.get("__Secure-user-role")?.value;
+    const userRole = request.cookies.get("user-role")?.value;
     if (userRole !== "admin") {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
   }
 
-  // Se tem token e tenta acessar rota pública, permite acesso
+  // Se tem token e tenta acessar rota pública, redireciona para dashboard
   if (authToken && publicRoutes.some((route) => pathname.startsWith(route))) {
-    return NextResponse.next();
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return NextResponse.next();
