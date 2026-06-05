@@ -2,339 +2,229 @@
 
 **Input**: Design documents from `/specs/002-gestao-usuarios/`
 
-**Feature Branch**: `002-gestao-usuarios`
+**Prerequisites**: plan.md ✅, spec.md ✅, research.md ✅, data-model.md ✅, contracts/api-contracts.md ✅, quickstart.md ✅
 
-**Tech Stack**: TypeScript 5.7, Next.js 15 (App Router), Supabase + PostgreSQL, React Hook Form, Zod, TailwindCSS
+**Tests**: Nenhum — conforme constituição do projeto (zero testes automatizados).
 
-**Prerequisites**: 
-- ✅ Feature 001 (autenticação) implementada
-- ✅ plan.md finalizado (documentado)
-- ✅ spec.md com 5 user stories definidas
-- ✅ data-model.md com schema PostgreSQL completo
-- ✅ research.md com decisões técnicas validadas
-- ✅ quickstart.md com instruções de setup
+**Organization**: Tasks agrupadas por user story para permitir implementação e teste independente de cada história.
 
-**Tests**: Nenhum (conforme constituição do projeto)
+## Format: `[ID] [P?] [Story] Description`
 
-**Organization**: Tasks são agrupadas por user story (US1-US5) para permitir implementação independente e testagem de cada story. Tarefas marcadas com [P] podem rodar em paralelo (diferentes arquivos, sem dependências).
-
----
-
-## Format: `- [ ] [ID] [P?] [Story?] Description com caminho exato do arquivo`
-
-- **[ID]**: Número sequencial (T001, T002, ...)
-- **[P]**: Pode rodar em paralelo (diferentes arquivos, nenhuma dependência)
-- **[Story]**: Qual user story (US1, US2, US3, US4, US5)
-- **Path**: Caminhos exatos em `src/`
+- **[P]**: Pode rodar em paralelo (arquivos diferentes, sem dependências)
+- **[Story]**: A qual user story esta task pertence (US1–US5)
+- Todos os caminhos de arquivo são relativos ao root do repositório
 
 ---
 
 ## Phase 1: Setup (Infraestrutura Compartilhada)
 
-**Propósito**: Inicialização do projeto, estrutura básica, migrações
+**Objetivo**: Inicialização do projeto — tipos, schemas e migrações de banco.
 
-- [ ] T001 Criar estrutura de diretórios conforme plan.md: `src/app/(admin)/users/`, `src/components/admin/users/`, `src/lib/services/`, `src/lib/types/`, `src/lib/schemas/`
-- [ ] T002 [P] Criar arquivo de tipos TypeScript para usuários em `src/lib/types/user.ts` (User, UserRole, UserAuditLog types)
-- [ ] T003 [P] Criar schemas Zod para validação em `src/lib/schemas/user.ts` (createUserSchema, updateUserSchema, emailSchema, passwordSchema)
-- [ ] T004 [P] Executar script SQL de criação de tabelas do data-model.md via Dashboard Supabase (users, user_audit_log, índices, triggers, RLS)
-- [ ] T005 Criar e executar script de seed do usuário root conforme quickstart.md (6 passos: criar em auth.users, anotar UUID, executar SQL com INSERT, verificar, salvar credenciais, testar login)
-- [ ] T006 [P] Criar arquivo de service para usuários em `src/lib/services/user.service.ts` (funções CRUD base sem lógica ainda)
+- [X] T001 Criar tipos TypeScript para entidades User e UserAuditLog em `src/lib/types/user.ts`
+- [X] T002 Criar Zod schemas de validação (createUserSchema, updateUserSchema, listUsersQuerySchema) em `src/lib/schemas/user.ts`
+- [X] T003 [P] Criar migration SQL para tabela `public.users` com índices, trigger `updated_at` e RLS policies em `supabase/migrations/20260601000001_create_users_table.sql`
+- [X] T004 [P] Criar migration SQL para tabela `public.user_audit_log` com índices, triggers de auditoria (UPDATE/DEACTIVATE) e RLS policies em `supabase/migrations/20260601000002_create_user_audit_log.sql`
 
 ---
 
-## Phase 2: Foundational (Pré-requisitos Bloqueadores)
+## Phase 2: Foundational (Pré-requisitos Bloqueantes)
 
-**Propósito**: Infraestrutura compartilhada que TODOS os stories dependem
+**Objetivo**: Infraestrutura core que DEVE estar completa antes de qualquer user story.
 
-**⚠️ CRÍTICO**: Nenhuma implementação de user story pode começar até esta fase estar 100% completa
+**⚠️ CRÍTICO**: Nenhum trabalho de user story pode começar até que esta fase esteja completa.
 
-- [ ] T007 [P] Estender middleware de autenticação em `src/middleware.ts` para validar JWT e adicionar userId ao header de requisições
-- [ ] T008 [P] Criar middleware RBAC (Role-Based Access Control) em `src/middleware.ts` para validar que apenas `admin` pode acessar endpoints de gestão de usuários
-- [ ] T009 Criar serviço de auditoria em `src/lib/services/audit.service.ts` com função `logAuditEvent()` para registrar em `user_audit_log`
-- [ ] T010 [P] Implementar helper de senha em `src/lib/security/password.ts`: `hashPassword()`, `verifyPassword()`, `generateTemporaryPassword()` (usando crypto.randomBytes + base64)
-- [ ] T011 [P] Criar helper para tokens em `src/lib/security/token.ts`: `generateSecureToken()`, `hashToken()` (para reset de senha)
-- [ ] T012 [P] Criar cliente Supabase Admin em `src/lib/supabase/admin.ts` com função para `adminResetUserPassword()` usando Supabase Admin API
-- [ ] T013 Criar helper de validação em `src/lib/validators/email.ts`: `validateUniqueEmail()` com query ao banco para verificar duplicação (case-insensitive)
-- [ ] T014 Criar layout administrativo base em `src/app/(admin)/layout.tsx` com navegação lateral, header, e proteção RBAC
+- [X] T005 Criar Supabase admin client singleton (usando SERVICE_ROLE_KEY) em `src/lib/supabase/admin.ts`
+- [X] T006 Estender `src/middleware.ts` para proteger rotas `/admin/**` e `/api/users/**` exigindo role `admin`
+- [X] T007 Criar layout do grupo de rotas admin com guarda de autenticação em `src/app/(admin)/layout.tsx`
+- [X] T008 [P] Implementar UserService com métodos base (createUser, getUserById, updateUser, listUsers) integrando Supabase admin client em `src/lib/services/user.service.ts`
+- [X] T009 [P] Implementar AuditService com função `logUserAudit` para logging application-level em `src/lib/services/audit.service.ts`
 
-**Checkpoint**: Fundação pronta - implementação de user stories pode começar em paralelo agora
+**Checkpoint**: Fundação pronta — implementação das user stories pode começar.
 
 ---
 
-## Phase 3: User Story 1 - Administrador Cadastra Novo Usuário (Priority: P1) 🎯 MVP
+## Phase 3: User Story 1 — Cadastro de Novo Usuário (Priority: P1) 🎯 MVP
 
-**Goal**: Permitir que administrador cadastre novos usuários com email, nome e perfil, com validação de duplicação e auditoria completa.
+**Goal**: Administrador consegue cadastrar novo usuário com email, nome, perfil e senha; recebe feedback de sucesso; auditoria registra CREATE.
 
-**Independent Test**: Criar novo usuário com email válido, nome e perfil; verificar se persiste em `public.users`; verificar entrada de auditoria em `user_audit_log` com action CREATE; tentar criar com email duplicado e verificar erro.
+**Independent Test**: Criar usuário com email `collector1@jlexpress.local`, nome e perfil via formulário → verificar registro em `public.users` e entrada `CREATE` em `user_audit_log`.
 
-### Implementação da User Story 1
+### Implementação — User Story 1
 
-- [ ] T015 [P] [US1] Criar componente form `src/components/admin/users/UserForm.tsx` com React Hook Form, Zod, campos: email, full_name, role, password, password_confirmation
-- [ ] T016 [P] [US1] Criar componente página nova de usuário `src/app/(admin)/users/new/page.tsx` com UserForm integrado
-- [ ] T017 [US1] Implementar endpoint POST em `src/app/api/users/route.ts` para criar usuário: validar email único, hash de senha, chamar Supabase Auth para criar user, inserir em public.users, registrar auditoria
-- [ ] T018 [US1] Adicionar validação de campos obrigatórios (email, full_name, role) no schema Zod em `src/lib/schemas/user.ts`
-- [ ] T019 [US1] Adicionar validação de email duplicado no endpoint POST (conferir com `validateUniqueEmail()`)
-- [ ] T020 [US1] Implementar logging de auditoria em POST (action: CREATE, performed_by: userId, performed_at, new_data: usuário criado)
-- [ ] T021 [US1] Adicionar tratamento de erros no endpoint (400 para validação, 409 para duplicação, 500 para erro de servidor)
-- [ ] T022 [US1] Testar manualmente: criar usuário válido, verificar se aparece em public.users, verificar entrada em user_audit_log
+- [X] T010 [US1] Implementar `POST /api/users` para criar usuário em `auth.users` + `public.users` via UserService em `src/app/api/users/route.ts`
+- [X] T011 [P] [US1] Implementar `GET /api/users/validate-email` para validação de email em tempo real (< 500ms) em `src/app/api/users/validate-email/route.ts`
+- [X] T012 [P] [US1] Criar componente `UserForm` com React Hook Form + Zod e validação de email em tempo real via `/api/users/validate-email` em `src/components/admin/users/UserForm.tsx`
+- [X] T013 [US1] Criar página de cadastro de novo usuário que utiliza `UserForm` e chama `POST /api/users` em `src/app/(admin)/users/new/page.tsx`
+- [X] T014 [US1] Adicionar registro de auditoria `CREATE` via AuditService no método `createUser` do UserService em `src/lib/services/user.service.ts`
 
-**Checkpoint**: User Story 1 totalmente funcional e testável independentemente
+**Checkpoint**: US1 completa — administrador cria usuário, vê feedback positivo e auditoria registra a ação.
 
 ---
 
-## Phase 4: User Story 2 - Administrador Edita Dados Cadastrais de Usuário (Priority: P1)
+## Phase 4: User Story 2 — Edição de Dados Cadastrais (Priority: P1)
 
-**Goal**: Permitir edição de nome, email e perfil de usuário existente com auditoria de mudanças.
+**Goal**: Administrador consegue editar nome, email e perfil de usuário existente; alterações persistem; auditoria registra quem editou e quando.
 
-**Independent Test**: Editar usuário existente, alterar nome e role, salvar; verificar se mudanças persistem; verificar entrada em user_audit_log com action UPDATE e snapshots old_data/new_data; tentar alterar email para duplicado e verificar erro.
+**Independent Test**: Editar usuário existente alterando nome e role → verificar persistência no banco e entrada `UPDATE` em `user_audit_log` com `old_data` e `new_data` corretos.
 
-### Implementação da User Story 2
+### Implementação — User Story 2
 
-- [ ] T023 [P] [US2] Criar página de edição `src/app/(admin)/users/[userId]/page.tsx` que carrega dados do usuário e renderiza UserForm em modo edição
-- [ ] T024 [P] [US2] Estender componente `UserForm.tsx` para suportar modo edição (valores iniciais, sem campo password ao editar)
-- [ ] T025 [US2] Implementar endpoint PUT em `src/app/api/users/[userId]/route.ts` para atualizar usuário: validar email único (exceto email atual), atualizar em public.users, atualizar updated_by, registrar auditoria completa
-- [ ] T026 [US2] Adicionar snapshot de dados antigos (old_data) na auditoria via trigger PostgreSQL em user_audit_log (já definido em data-model.md)
-- [ ] T027 [US2] Implementar validação de email duplicado em PUT (permitir se for o mesmo email, rejeitar se for de outro usuário)
-- [ ] T028 [US2] Adicionar tratamento de erros em PUT (404 se usuário não existe, 409 se email duplicado)
-- [ ] T029 [US2] Testar manualmente: editar usuário, alterar nome, verificar persistência e auditoria; tentar email duplicado e verificar erro
+- [X] T015 [US2] Implementar `GET /api/users/:userId` para buscar dados completos de um usuário em `src/app/api/users/[userId]/route.ts`
+- [X] T016 [US2] Implementar `PUT /api/users/:userId` para atualizar dados do usuário (com validação de email único ao editar) em `src/app/api/users/[userId]/route.ts`
+- [X] T017 [US2] Implementar `GET /api/users/:userId/audit-log` com paginação e filtro por action em `src/app/api/users/[userId]/audit-log/route.ts`
+- [X] T018 [US2] Criar página de edição de usuário com `UserForm` pré-preenchido, botão salvar e seção de histórico de auditoria em `src/app/(admin)/users/[userId]/page.tsx`
+- [X] T019 [US2] Adicionar registro de auditoria `UPDATE` via AuditService no método `updateUser` do UserService em `src/lib/services/user.service.ts`
 
-**Checkpoint**: User Stories 1 E 2 funcionais e independentes
+**Checkpoint**: US2 completa — administrador edita dados de usuário, vê auditoria com alterações anteriores e novas.
 
 ---
 
-## Phase 5: User Story 3 - Administrador Reseta Senha de Usuário (Priority: P1)
+## Phase 5: User Story 3 — Reset de Senha (Priority: P1)
 
-**Goal**: Permitir reset de senha com envio de link de recuperação via email, registrando ação em auditoria.
+**Goal**: Administrador consegue disparar reset de senha; usuário recebe link por e-mail; auditoria registra o reset.
 
-**Independent Test**: Resetar senha de um usuário, verificar se email de reset foi enviado (ou link foi gerado); usar link para resetar senha; fazer login com nova senha e verificar sucesso; verificar entrada em user_audit_log com action PASSWORD_RESET.
+**Independent Test**: Clicar em "Resetar Senha" para um usuário → verificar mensagem de confirmação na UI e entrada `PASSWORD_RESET` em `user_audit_log`.
 
-### Implementação da User Story 3
+### Implementação — User Story 3
 
-- [ ] T030 [P] [US3] Criar componente botão de reset em `src/components/admin/users/UserActions.tsx` com confirmação antes de executar
-- [ ] T031 [P] [US3] Integrar botão de reset em página de edição de usuário (`src/app/(admin)/users/[userId]/page.tsx`)
-- [ ] T032 [US3] Implementar endpoint POST em `src/app/api/users/[userId]/reset-password/route.ts` que: chama Supabase Admin API (`generateLink` com type recovery), registra auditoria com action PASSWORD_RESET, retorna sucesso
-- [ ] T033 [US3] Implementar template de email para reset (em Supabase Email Templates ou arquivo em `src/lib/email/templates/`)
-- [ ] T034 [US3] Adicionar configuração de redirect URL em reset password (apontar para página de reset com token)
-- [ ] T035 [US3] Adicionar logging específico de PASSWORD_RESET em auditoria (performed_by, performed_at, reason: "Administrador solicitou reset")
-- [ ] T036 [US3] Adicionar tratamento de erros (404 se usuário não existe, 500 se Supabase falhar)
-- [ ] T037 [US3] Testar manualmente: resetar senha, verificar email/link, fazer login com nova senha, verificar auditoria
+- [X] T020 [US3] Implementar `POST /api/users/:userId/reset-password` usando `supabase.auth.admin.generateLink({ type: 'recovery', email })` em `src/app/api/users/[userId]/reset-password/route.ts`
+- [X] T021 [US3] Adicionar botão "Resetar Senha" com diálogo de confirmação na página de edição de usuário em `src/app/(admin)/users/[userId]/page.tsx`
+- [X] T022 [US3] Adicionar registro de auditoria `PASSWORD_RESET` via AuditService no método de reset de senha do UserService em `src/lib/services/user.service.ts`
 
-**Checkpoint**: User Stories 1, 2 E 3 funcionais
+**Checkpoint**: US3 completa — administrador dispara reset de senha; usuário recebe e-mail; auditoria registra a ação.
 
 ---
 
-## Phase 6: User Story 4 - Administrador Ativa/Desativa Usuário (Priority: P2)
+## Phase 6: User Story 4 — Ativar/Desativar Usuário (Priority: P2)
 
-**Goal**: Permitir soft delete (ativação/desativação) de usuários com preservação de histórico e bloqueio de login para inativos.
+**Goal**: Administrador consegue desativar usuário (soft delete); usuário desativado não consegue logar; dados persistem; administrador pode reativar.
 
-**Independent Test**: Desativar usuário (is_active = false); verificar que usuário não consegue fazer login; reativar usuário (is_active = true); verificar que login funciona novamente; verificar entrada em user_audit_log com actions DEACTIVATE/ACTIVATE; dados históricos preservados.
+**Independent Test**: Desativar usuário → tentar login com usuário desativado e verificar bloqueio → verificar entrada `DEACTIVATE` em `user_audit_log` → reativar usuário.
 
-### Implementação da User Story 4
+### Implementação — User Story 4
 
-- [ ] T038 [P] [US4] Criar componente toggle de ativação em `src/components/admin/users/UserStatus.tsx` (ativo/inativo)
-- [ ] T039 [P] [US4] Integrar toggle em página de listagem e edição de usuários
-- [ ] T040 [US4] Implementar endpoint PATCH em `src/app/api/users/[userId]/status/route.ts` para alternar is_active: atualizar em public.users, registrar auditoria (action: ACTIVATE ou DEACTIVATE)
-- [ ] T041 [US4] Estender middleware de autenticação para verificar se usuário está ativo (is_active = true) antes de permitir requisições
-- [ ] T042 [US4] Adicionar validação em login (Feature 001) para bloquear login de usuários inativos
-- [ ] T043 [US4] Adicionar proteção contra auto-desativação (admin não consegue desativar a si mesmo)
-- [ ] T044 [US4] Adicionar tratamento de erros (404 se usuário não existe, 400 se tentar desativar a si mesmo)
-- [ ] T045 [US4] Testar manualmente: desativar usuário, tentar login e verificar bloqueio; reativar e verificar que login funciona; tentar auto-desativação e verificar erro
+- [X] T023 [US4] Implementar `DELETE /api/users/:userId` para soft delete (setar `is_active = false`) com campo opcional `reason` em `src/app/api/users/[userId]/route.ts`
+- [X] T024 [US4] Adicionar guarda de auto-desativação no handler `DELETE` (impedir admin de desativar a si mesmo) em `src/app/api/users/[userId]/route.ts`
+- [X] T025 [US4] Adicionar botões "Desativar"/"Ativar" com diálogo de confirmação na página de edição de usuário em `src/app/(admin)/users/[userId]/page.tsx`
+- [X] T026 [US4] Adicionar registros de auditoria `DEACTIVATE` e `ACTIVATE` via AuditService no UserService em `src/lib/services/user.service.ts`
 
-**Checkpoint**: User Stories 1-4 funcionais
+**Checkpoint**: US4 completa — administrador ativa/desativa usuários; usuário desativado não acessa o sistema; auditoria registra a ação.
 
 ---
 
-## Phase 7: User Story 5 - Administrador Lista e Busca Usuários (Priority: P2)
+## Phase 7: User Story 5 — Listagem e Busca de Usuários (Priority: P2)
 
-**Goal**: Permitir listagem paginada de usuários com busca por nome/email e ordenação por coluna.
+**Goal**: Administrador consegue listar todos os usuários com busca por nome/email, paginação e ordenação por coluna.
 
-**Independent Test**: Acessar listagem de usuários; verificar se aparecem com paginação (ex: 10 por página); buscar por nome, verificar filtro em tempo real; buscar por email, verificar resultado correto; ordenar por colunas; verificar performance < 3 segundos para 1000 usuários.
+**Independent Test**: Acessar listagem → buscar por "João" → verificar filtro em tempo real → paginar → clicar em coluna para ordenar.
 
-### Implementação da User Story 5
+### Implementação — User Story 5
 
-- [ ] T046 [P] [US5] Criar componente tabela de usuários `src/components/admin/users/UserTable.tsx` com colunas: email, full_name, role, is_active, last_login_at, ações (editar, reset, desativar/ativar)
-- [ ] T047 [P] [US5] Criar componente de busca `src/components/admin/users/UserSearch.tsx` com input de busca (nome/email) e filtro de status (ativo/inativo)
-- [ ] T048 [P] [US5] Criar componente de paginação `src/components/admin/users/UserPagination.tsx` (botões anterior/próximo, página atual, total de páginas)
-- [ ] T049 [P] [US5] Criar página principal de listagem `src/app/(admin)/users/page.tsx` integrando UserTable, UserSearch, UserPagination
-- [ ] T050 [US5] Implementar endpoint GET em `src/app/api/users/route.ts` com suporte a: query params (search, filter, sort, page, limit), busca case-insensitive em email/full_name, paginação, ordenação por colunas, retornar { users, total, pages }
-- [ ] T051 [US5] Adicionar índices de performance em `public.users` (já em data-model.md): idx_users_email, idx_users_role, idx_users_is_active
-- [ ] T052 [US5] Implementar busca com query LIKE em SQL para email/full_name (com índices full-text search se tempo permitir)
-- [ ] T053 [US5] Adicionar tratamento de paginação (validar limit, offset, retornar total correto)
-- [ ] T054 [US5] Adicionar tratamento de erros (validar parâmetros de busca, retornar 400 se inválido)
-- [ ] T055 [US5] Testar manualmente: listar usuários, buscar por nome, buscar por email, ordenar colunas, paginar, verificar performance
+- [X] T027 [US5] Implementar `GET /api/users` com paginação, busca (search por nome/email), filtro por role e is_active, e ordenação por coluna em `src/app/api/users/route.ts`
+- [X] T028 [P] [US5] Criar componente `UserList` com tabela de usuários e colunas ordenáveis (email, nome, role, status) em `src/components/admin/users/UserList.tsx`
+- [X] T029 [P] [US5] Criar componente `UserSearch` com input de busca com debounce (300ms) em `src/components/admin/users/UserSearch.tsx`
+- [X] T030 [P] [US5] Criar componente `UserPagination` com navegação de páginas e contador de registros em `src/components/admin/users/UserPagination.tsx`
+- [X] T031 [US5] Criar página de listagem de usuários combinando `UserList`, `UserSearch` e `UserPagination` com link para `/users/new` em `src/app/(admin)/users/page.tsx`
+- [X] T032 [US5] Adicionar link de navegação para página de edição em cada linha da tabela `UserList` em `src/components/admin/users/UserList.tsx`
 
-**Checkpoint**: Todas as User Stories 1-5 funcionais e independentes
+**Checkpoint**: US5 completa — administrador lista, busca, pagina e ordena usuários.
 
 ---
 
 ## Phase 8: Polish & Cross-Cutting Concerns
 
-**Propósito**: Melhorias transversais que afetam múltiplas user stories
+**Objetivo**: Melhorias que afetam múltiplas user stories e validações finais.
 
-- [ ] T056 [P] Adicionar confirmações de ação (modal) em desativar/resetar/deletar em todas as páginas
-- [ ] T057 [P] Melhorar mensagens de erro (feedback claro ao usuário final em todas as operações)
-- [ ] T058 [P] Implementar feedback de sucesso (toast/notification) após criar/editar/desativar usuários
-- [ ] T059 [P] Refatorar componentes `UserForm.tsx`, `UserTable.tsx` para melhorar reutilização e legibilidade
-- [ ] T060 Adicionar validação de política de senha em `src/lib/validators/password.ts` (comprimento mínimo, caracteres especiais, conforme constitution.md)
-- [ ] T061 Implementar rate limiting em endpoints sensíveis (POST /users, PUT /users/:id) para evitar abuso
-- [ ] T062 [P] Implementar cache de listagem de usuários (ex: Redis ou React Query) para melhorar performance em listagens frequentes
-- [ ] T063 [P] Adicionar logs estruturados em todos os endpoints de usuários (winston ou console estruturado)
-- [ ] T064 Executar validation de quickstart.md (verificar script de seed root, instruções de setup, testes manuais)
-- [ ] T065 [P] Criar documentação de uso em `specs/002-gestao-usuarios/IMPLEMENTATION_GUIDE.md` (como usar endpoints, exemplos cURL)
-- [ ] T066 [P] Melhorar estilo responsivo com TailwindCSS em todos os componentes (mobile-first, testar em dispositivos)
-- [ ] T067 Refatorar service layer em `src/lib/services/user.service.ts` (adicionar testes manuais de lógica)
-- [ ] T068 [P] Adicionar tratamento de timezone (todos os timestamps em UTC conforme constitution.md)
-- [ ] T069 Validar conformidade com constituição (Portuguese, TypeScript strict, no tests, RLS policies, soft delete)
-- [ ] T070 [P] Cleanup de código: remover logs de debug, comentários obsoletos, importações não usadas
-
-**Checkpoint**: Polimento completo, código pronto para produção
+- [X] T033 [P] Criar helper `ApiResponse` para resposta padronizada de todos os endpoints (sucesso, erro, paginação) em `src/lib/api/response.ts`
+- [X] T034 [P] Adicionar menu de navegação admin com link "Usuários" no layout admin em `src/app/(admin)/layout.tsx`
+- [X] T035 Validar edge cases em UserService: email case-insensitive, bloqueio de auto-desativação, email duplicado na edição em `src/lib/services/user.service.ts`
+- [ ] T036 Executar validação completa do quickstart.md: aplicar migrations, inserir usuário root e executar os 7 testes manuais documentados
 
 ---
 
-## Dependencies & Execution Order
+## Dependências e Ordem de Execução
 
-### Phase Dependencies
+### Dependências entre Fases
 
-- **Setup (Phase 1)**: Sem dependências - pode começar imediatamente
-- **Foundational (Phase 2)**: Depende de Setup - **BLOQUEIA** todas as user stories (CRÍTICO)
-- **User Stories (Phases 3-7)**: Todas dependem de Foundational completo
-  - Podem ser implementadas em paralelo se houver equipe
-  - Ou sequencial em ordem de prioridade (P1 → P2)
-- **Polish (Phase 8)**: Depende de todas as user stories desejadas estarem completas
+- **Setup (Phase 1)**: Sem dependências — pode começar imediatamente
+- **Foundational (Phase 2)**: Depende da conclusão do Setup — BLOQUEIA todas as user stories
+- **User Stories (Phase 3–7)**: Todas dependem da conclusão do Foundational
+  - Podem prosseguir em paralelo (se houver capacidade) ou sequencialmente por prioridade (P1 → P2)
+- **Polish (Phase 8)**: Depende da conclusão de todas as user stories desejadas
 
-### User Story Dependencies
+### Dependências entre User Stories
 
-- **US1 (P1)**: Inicia após Foundational - Sem dependências em outras stories
-- **US2 (P1)**: Inicia após Foundational - Integra com US1 mas é independente
-- **US3 (P1)**: Inicia após Foundational - Integra com US1/US2 mas é independente
-- **US4 (P2)**: Inicia após Foundational - Integra com US1-3 mas é independente
-- **US5 (P2)**: Inicia após Foundational - Integra com US1-4 mas é independente
+- **US1 (P1)**: Pode começar após Foundational — sem dependências de outras histórias
+- **US2 (P1)**: Pode começar após Foundational — pode reusar `UserForm` criado em US1
+- **US3 (P1)**: Depende de US2 (adiciona funcionalidade à página de edição de US2)
+- **US4 (P2)**: Depende de US2 (adiciona funcionalidade à página de edição de US2)
+- **US5 (P2)**: Pode começar após Foundational — independente de US1–US4
 
-### Within Each User Story
+### Dentro de cada User Story
 
+- Modelos/Serviços antes de endpoints
+- Endpoints antes de componentes UI
 - Componentes antes de páginas
-- Endpoints antes de integração
-- Validação antes de auditoria
-- Story completa antes de next priority
+- Auditoria junto com o serviço correspondente
 
-### Parallel Opportunities
+### Oportunidades de Paralelismo
 
-- **Setup**: T001-T006 marcados [P] podem rodar em paralelo
-- **Foundational**: T007-T014 marcados [P] podem rodar em paralelo (mas T006/T009 devem estar antes de US1)
-- **Após Foundational**: Todas as US podem começar em paralelo (se 5 desenvolvedores: 1 por story)
-- **Within US1**: T015, T016 [P] podem rodar em paralelo
-- **Within US2**: T023, T024 [P] podem rodar em paralelo
-- **Within US5**: T046, T047, T048, T049 [P] podem rodar em paralelo
+- T003 e T004 (migrations) podem rodar em paralelo
+- T008 e T009 (UserService e AuditService) podem rodar em paralelo
+- T011 e T012 (validate-email endpoint e UserForm) podem rodar em paralelo dentro de US1
+- T028, T029, T030 (UserList, UserSearch, UserPagination) podem rodar em paralelo dentro de US5
+- T033 e T034 (ApiResponse helper e menu de navegação) podem rodar em paralelo na fase de Polish
 
 ---
 
-## Parallel Example: User Story 1 (MVP)
+## Exemplo de Execução em Paralelo: User Story 5
 
 ```bash
-# Após Phase 1 + Phase 2 estarem 100% completos:
+# Lançar todos os componentes de US5 em paralelo (após T027 ter seu contrato definido):
+Task: "Criar componente UserList em src/components/admin/users/UserList.tsx"        # T028
+Task: "Criar componente UserSearch em src/components/admin/users/UserSearch.tsx"    # T029
+Task: "Criar componente UserPagination em src/components/admin/users/UserPagination.tsx" # T030
 
-# Componentes em paralelo:
-Task T015: Criar UserForm.tsx
-Task T016: Criar /new/page.tsx
-
-# Depois:
-Task T017: POST endpoint (depende de T015, T016)
-Tasks T018-T022: Validação e logging (dependem de T017)
+# Depois que todos concluírem:
+Task: "Criar página de listagem em src/app/(admin)/users/page.tsx"  # T031
 ```
 
 ---
 
-## Parallel Example: Após Foundational (Multi-desenvolvedor)
+## Estratégia de Implementação
 
-```bash
-# Com 5 desenvolvedores após Phase 2:
+### MVP Primeiro (Apenas User Story 1)
 
-Developer A: US1 (T015-T022)
-Developer B: US2 (T023-T029)
-Developer C: US3 (T030-T037)
-Developer D: US4 (T038-T045)
-Developer E: US5 (T046-T055)
+1. Completar Phase 1: Setup (T001–T004)
+2. Completar Phase 2: Foundational (T005–T009) — CRÍTICO
+3. Completar Phase 3: User Story 1 (T010–T014)
+4. **PARAR e VALIDAR**: Testar US1 independentemente (criar usuário, verificar auditoria)
+5. Demo/deploy se estiver pronto
 
-Todos podem começar em paralelo após T001-T014 finalizarem
-```
+### Entrega Incremental
 
----
+1. Setup + Foundational → Fundação pronta
+2. US1 (P1) → Testar → Deploy MVP
+3. US2 (P1) → Testar → Deploy
+4. US3 (P1) → Testar → Deploy (completa P1)
+5. US4 (P2) → Testar → Deploy
+6. US5 (P2) → Testar → Deploy (completa P2)
+7. Polish → Deploy final
 
-## Implementation Strategy
+### Estratégia de Time em Paralelo
 
-### MVP First (Just US1)
-
-1. ✅ Complete Phase 1 (Setup) - T001-T006
-2. ✅ Complete Phase 2 (Foundational) - T007-T014
-3. ✅ Complete Phase 3 (US1) - T015-T022
-4. **STOP and VALIDATE** - Testar US1 isoladamente
-5. Deploy/Demo
-6. **Próximo**: Ou continuar com US2 (P1) ou ir para Polish
-
-### Incremental Delivery (Recomendado)
-
-1. Phases 1-2 (Setup + Foundational) - **2-3 dias**
-2. Phase 3 (US1) - **1-2 dias** → Deploy MVP
-3. Phase 4 (US2) - **1 dia** → Deploy
-4. Phase 5 (US3) - **1 dia** → Deploy
-5. Phase 6 (US4) - **1 dia** → Deploy
-6. Phase 7 (US5) - **1-2 dias** → Deploy
-7. Phase 8 (Polish) - **1 dia** → Final polish
-8. **Total**: ~8-10 dias para feature completa
-
-### Parallel Team (4-5 Developers)
-
-1. Dias 1-2: Todos trabalham em Setup + Foundational
-2. Dia 3+: Cada dev pega uma US em paralelo
-3. Todos integram no dia final
-4. **Total**: ~5-6 dias para feature completa
+Com múltiplos desenvolvedores (após Phase 2 concluída):
+- **Dev A**: US1 + US2 (fluxo de criação/edição)
+- **Dev B**: US3 + US4 (reset de senha + ativar/desativar)
+- **Dev C**: US5 (listagem + busca)
 
 ---
 
-## Task Checklist Format
+## Notas
 
-Todas as tarefas seguem o formato obrigatório:
-```
-- [ ] [TaskID] [P?] [Story?] Description com arquivo exato
-```
-
-✅ **CORRECT**: `- [ ] T015 [P] [US1] Criar componente form src/components/admin/users/UserForm.tsx com React Hook Form`
-
-❌ **WRONG**: `- [ ] Criar form` (sem ID, sem arquivo)
-
----
-
-## Status & Próximos Passos
-
-✅ **Tasks.md gerado com sucesso**
-
-- Total de 70 tarefas
-- Organizadas em 8 phases
-- 5 user stories (US1-5, todas P1/P2)
-- Tarefas parallelizáveis identificadas [P]
-- MVP scope: Phases 1-3 (US1 básico)
-
-**Próximo**: 
-1. Iniciar com Phase 1 (Setup) - T001-T006
-2. Após concluir Setup, ir para Phase 2 (Foundational) - T007-T014
-3. Após Foundational, começar Phase 3 (US1 - MVP)
-
-**Para executar tarefa específica**:
-- Copiar descrição da tarefa
-- Abrir arquivo mencionado
-- Completar conforme descrição
-- Marcar ☑️ quando pronto
-- Committar com mensagem: `feat(002-gestao-usuarios): T0XX - [descrição]`
-
-**Validação**:
-- Cada task deve ser independente e executável
-- MVP (US1) deve funcionar isoladamente após Phase 3
-- Testar conforme "Independent Test" de cada story
-
----
-
-**Gerado em**: 2026-06-01  
-**Feature Branch**: `002-gestao-usuarios`  
-**Baseado em**: plan.md, spec.md, data-model.md, research.md, quickstart.md  
-**Conform com**: constitution.md (Portuguese, TypeScript strict, RLS, soft delete, auditoria 100%, zero testes)
-
+- `[P]` = arquivos diferentes, sem dependências — podem rodar em paralelo
+- `[USn]` = mapeia task para user story específica para rastreabilidade
+- Cada user story deve ser completável e testável independentemente
+- Fazer commit após cada task ou grupo lógico
+- Parar em cada checkpoint para validar a história independentemente
+- Evitar: tasks vagas, conflitos no mesmo arquivo, dependências cross-story que quebrem independência

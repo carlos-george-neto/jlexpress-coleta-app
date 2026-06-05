@@ -48,6 +48,7 @@ async function fetchUserProfile(userId: string): Promise<{
   try {
     
     const { data, error } = await supabase
+      .schema("public")
       .from("users")
       .select("id, email, full_name, role, is_active, created_at, updated_at")
       .eq("id", userId)

@@ -68,32 +68,24 @@ FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
 -- RLS: Apenas admins podem visualizar e editar outros usuários
+-- Nota: policies usam auth.jwt() ->> 'user_role' para evitar recursão infinita.
+-- O claim user_role é injetado no JWT via custom_access_token_hook (migration 003).
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Admins can view all users" ON public.users
+  FOR SELECT USING (
+    (auth.jwt() ->> 'user_role') = 'admin'
+  );
 
 CREATE POLICY "Admins can create users" ON public.users
   FOR INSERT WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.users 
-      WHERE id = auth.uid() AND role = 'admin'
-    )
+    (auth.jwt() ->> 'user_role') = 'admin'
   );
 
 CREATE POLICY "Admins can update users" ON public.users
   FOR UPDATE USING (
-    EXISTS (
-      SELECT 1 FROM public.users 
-      WHERE id = auth.uid() AND role = 'admin'
-    )
+    (auth.jwt() ->> 'user_role') = 'admin'
   );
-
-CREATE POLICY "Admins can soft-delete users" ON public.users
-  FOR UPDATE USING (
-    EXISTS (
-      SELECT 1 FROM public.users 
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  )
-  WITH CHECK (is_active IN (true, false));
 
 
 **Campos**:
@@ -198,10 +190,7 @@ ALTER TABLE public.user_audit_log ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Admins can view all audit logs" ON public.user_audit_log
   FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.users 
-      WHERE id = auth.uid() AND role = 'admin'
-    )
+    (auth.jwt() ->> 'user_role') = 'admin'
   );
 ```
 
