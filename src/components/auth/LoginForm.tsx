@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginInput } from "@/lib/schemas/auth";
@@ -13,6 +14,7 @@ import Link from "next/link";
 export function LoginForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -89,11 +91,21 @@ export function LoginForm() {
       <FormField>
         <Input
           {...register("password")}
-          type="password"
+          type={showPassword ? "text" : "password"}
           placeholder="Sua senha"
           error={errors.password?.message}
           label="Senha"
           disabled={isSubmitting}
+          rightElement={
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? "Ocultar senha" : "Exibir senha"}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          }
         />
       </FormField>
 
