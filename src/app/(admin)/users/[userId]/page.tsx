@@ -5,7 +5,7 @@ import { UserForm } from "@/components/admin/users/UserForm";
 import { Card } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
 import { Button } from "@/components/ui/Button";
-import { UserRecord, UserAuditLog } from "@/lib/types/user";
+import { UserRecord, UserAuditLog, UserRole } from "@/lib/types/user";
 import Link from "next/link";
 
 interface AuditLogResponse {
@@ -31,6 +31,7 @@ export default function EditUserPage({
   params: Promise<{ userId: string }>;
 }) {
   const { userId } = use(params);
+  const [currentUser, setCurrentUser] = useState<{ id: string; role: UserRole } | null>(null);
   const [user, setUser] = useState<UserRecord | null>(null);
   const [auditLogs, setAuditLogs] = useState<UserAuditLog[]>([]);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
@@ -41,6 +42,15 @@ export default function EditUserPage({
   const [showToggleConfirm, setShowToggleConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) setCurrentUser({ id: data.user.id, role: data.user.role });
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     async function loadUser() {
@@ -239,28 +249,30 @@ export default function EditUserPage({
             </div>
           )}
 
-          {/* Activate/Deactivate */}
-          {!showToggleConfirm ? (
-            <Button
-              variant={user.is_active ? "secondary" : "primary"}
-              onClick={() => setShowToggleConfirm(true)}
-              disabled={isToggling}
-              className={user.is_active ? "text-red-600 hover:text-red-800" : ""}
-            >
-              {user.is_active ? "Desativar Usuário" : "Ativar Usuário"}
-            </Button>
-          ) : (
-            <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
-              <span className="text-sm text-yellow-800">
-                {user.is_active ? "Desativar este usuário?" : "Ativar este usuário?"}
-              </span>
-              <Button onClick={handleToggleActive} isLoading={isToggling}>
-                Confirmar
+          {/* Activate/Deactivate — oculto quando admin edita o próprio perfil */}
+          {!(currentUser?.id === userId && currentUser?.role === "admin") && (
+            !showToggleConfirm ? (
+              <Button
+                variant={user.is_active ? "secondary" : "primary"}
+                onClick={() => setShowToggleConfirm(true)}
+                disabled={isToggling}
+                className={user.is_active ? "text-red-600 hover:text-red-800" : ""}
+              >
+                {user.is_active ? "Desativar Usuário" : "Ativar Usuário"}
               </Button>
-              <Button variant="secondary" onClick={() => setShowToggleConfirm(false)}>
-                Cancelar
-              </Button>
-            </div>
+            ) : (
+              <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
+                <span className="text-sm text-yellow-800">
+                  {user.is_active ? "Desativar este usuário?" : "Ativar este usuário?"}
+                </span>
+                <Button onClick={handleToggleActive} isLoading={isToggling}>
+                  Confirmar
+                </Button>
+                <Button variant="secondary" onClick={() => setShowToggleConfirm(false)}>
+                  Cancelar
+                </Button>
+              </div>
+            )
           )}
         </div>
       </Card>
