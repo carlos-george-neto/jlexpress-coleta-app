@@ -63,7 +63,7 @@
 
 **Purpose**: Validação final dos dois fluxos da feature.
 
-- [ ] T005 Validar os dois fluxos descritos em `specs/004-admin-edit-password-toggle/quickstart.md` executando `npm run dev` e testando manualmente no browser
+- [X] T005 Validar os dois fluxos descritos em `specs/004-admin-edit-password-toggle/quickstart.md` executando `npm run dev` e testando manualmente no browser
 
 ---
 
