@@ -6,10 +6,10 @@
 
 ## Entidades
 
-### 1. Tabela `users` (Supabase Auth + Custom)
+### 1. Tabela `auth.users` (Supabase Auth)
 
 ```sql
--- Criado automaticamente por Supabase Auth
+-- Gerenciado pelo Supabase Auth
 auth.users
   - id: UUID (PK)
   - email: string (unique)
@@ -17,39 +17,18 @@ auth.users
   - email_confirmed_at: timestamp
   - created_at: timestamp
   - updated_at: timestamp
-
--- Extensão customizada (se necessário)
-public.user_profiles
-  - id: UUID (PK, FK para auth.users.id)
-  - full_name: string
-  - profile_type: enum ('admin' | 'coletor') — default: 'coletor'
-  - is_active: boolean — default: true
-  - last_login_at: timestamp
-  - created_at: timestamp
-  - updated_at: timestamp
 ```
 
-### 2. Tabela `sessions` (Opcional - para auditoria)
+### 2. Tabela `public.users` (Dados de Negócio)
 
-```sql
-public.sessions
-  - id: UUID (PK)
-  - user_id: UUID (FK para users.id)
-  - ip_address: string
-  - user_agent: string
-  - token_jti: string (JWT ID)
-  - expires_at: timestamp
-  - created_at: timestamp
-  - revoked_at: timestamp (NULL se ativa)
-```
+Os dados de perfil do usuário (nome, role, status) são armazenados em `public.users` com FK para `auth.users(id)`. Ver modelo completo em `specs/002-gestao-usuarios/data-model.md`.
 
 ---
 
 ## Relacionamentos
 
 ```
-users (1) ──→ (N) sessions
-       └─→ user_profiles (1:1)
+auth.users (1) ──→ (1) public.users
 ```
 
 ---
@@ -68,8 +47,7 @@ Input:
 Process:
   1. Validar schema (Zod)
   2. Chamar Supabase signInWithPassword
-  3. Se sucesso: criar session record (auditoria)
-  4. Retornar JWT em cookie httpOnly
+  3. Retornar JWT em cookie httpOnly
 
 Output:
   {
@@ -78,7 +56,7 @@ Output:
       id: string,
       email: string,
       full_name: string,
-      profile_type: string
+      role: string
     },
     error?: string
   }
@@ -95,9 +73,8 @@ Input:
   { }
 
 Process:
-  1. Revocar session (marcar revoked_at)
-  2. Limpar cookie de sessão
-  3. Revogar refresh token (Supabase)
+  1. Limpar cookie de sessão
+  2. Revogar refresh token (Supabase)
 
 Output:
   { success: true }
@@ -128,7 +105,7 @@ interface User {
   id: string;
   email: string;
   fullName: string;
-  profileType: 'admin' | 'coletor';
+  role: 'admin' | 'collector' | 'deliverer' | 'user';
   isActive: boolean;
   lastLoginAt: Date | null;
   createdAt: Date;
@@ -170,43 +147,18 @@ interface AuthResponse {
 - Hash com bcrypt (Supabase)
 - Nunca armazenar em plain text
 
-### Profile Type
-- Enum: 'admin' | 'coletor'
-- Default: 'coletor'
+### Role
+- Enum: 'admin' | 'collector' | 'deliverer' | 'user'
+- Default: 'user'
 - Imutável exceto por admin
 
 ---
 
 ## Migrações Supabase
 
-```sql
--- Criar tabela de user_profiles (se usando custom fields)
-CREATE TABLE user_profiles (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  full_name TEXT NOT NULL,
-  profile_type TEXT NOT NULL DEFAULT 'coletor' CHECK (profile_type IN ('admin', 'coletor')),
-  is_active BOOLEAN NOT NULL DEFAULT true,
-  last_login_at TIMESTAMP,
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
+As migrações de banco de dados estão em `supabase/migrations/`. A criação das tabelas de usuário (`public.users`) e auditoria (`public.user_audit_log`) é feita nas migrations da feature 002. Ver `specs/002-gestao-usuarios/data-model.md` para detalhes do schema.
 
--- Criar tabela de sessions (para auditoria)
-CREATE TABLE sessions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  ip_address INET,
-  user_agent TEXT,
-  token_jti TEXT UNIQUE,
-  expires_at TIMESTAMP NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  revoked_at TIMESTAMP
-);
-
--- Indexes
-CREATE INDEX idx_sessions_user_id ON sessions(user_id);
-CREATE INDEX idx_sessions_expires_at ON sessions(expires_at);
-```
+**Padrão RLS obrigatório**: todas as policies devem usar `auth.jwt() ->> 'user_role'` e `auth.jwt() ->> 'user_is_active'` em vez de sub-queries em `public.users`. Ver migration `20260601000003_fix_rls_jwt_claims.sql` e `20260607000002_fix_rls_shipments_jwt_claims.sql`.
 
 ---
 
@@ -226,6 +178,6 @@ Cookie: __Secure-refresh-token (Refresh)
 
 ## Retenção de Dados
 
-- Sessions expiram em 1 hora (configurável)
+- JWT expira em 1 hora (configurável via Supabase)
 - Refresh token expira em 7 dias
 - Logs de auditoria retidos por 90 dias (futura)

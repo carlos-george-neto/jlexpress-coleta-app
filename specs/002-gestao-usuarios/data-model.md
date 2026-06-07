@@ -68,8 +68,10 @@ FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
 -- RLS: Apenas admins podem visualizar e editar outros usuários
--- Nota: policies usam auth.jwt() ->> 'user_role' para evitar recursão infinita.
--- O claim user_role é injetado no JWT via custom_access_token_hook (migration 003).
+-- Padrão obrigatório: usar auth.jwt() claims para evitar recursão e sub-queries.
+-- Os claims user_role e user_is_active são injetados no JWT via
+-- custom_access_token_hook (migration 003) e sincronizados via trigger
+-- sync_user_role_to_auth (atualizado em migration 20260607000002).
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Admins can view all users" ON public.users
@@ -205,23 +207,6 @@ CREATE POLICY "Admins can view all audit logs" ON public.user_audit_log
 - `ip_address` (INET): IP da requisição (opcional)
 
 **RLS**: Apenas admins visualizam audit log
-
----
-
-### 3. Tabela: `public.user_profiles` (opcional, para extensão futura)
-
-```sql
--- Opcional: Para armazenar dados adicionais sem estender public.users
-CREATE TABLE IF NOT EXISTS public.user_profiles (
-  id UUID PRIMARY KEY REFERENCES public.users(id) ON DELETE CASCADE,
-  bio TEXT,
-  avatar_url TEXT,
-  phone_number VARCHAR(20),
-  preferred_locale VARCHAR(10) DEFAULT 'pt-BR',
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-```
 
 ---
 

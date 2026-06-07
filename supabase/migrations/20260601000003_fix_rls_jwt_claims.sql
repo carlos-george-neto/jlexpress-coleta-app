@@ -46,7 +46,15 @@ FOR EACH ROW
 EXECUTE FUNCTION public.sync_user_role_to_auth();
 
 -- Backfill: sincronizar usuários já existentes
+-- Auditoria é desabilitada durante o backfill porque migrations rodam sem sessão
+-- autenticada (auth.uid() = NULL) e performed_by tem constraint NOT NULL.
+ALTER TABLE public.users DISABLE TRIGGER audit_users_update_trigger;
+ALTER TABLE public.users DISABLE TRIGGER audit_users_delete_trigger;
+
 UPDATE public.users SET role = role WHERE true;
+
+ALTER TABLE public.users ENABLE TRIGGER audit_users_update_trigger;
+ALTER TABLE public.users ENABLE TRIGGER audit_users_delete_trigger;
 
 
 -- ============================================================
