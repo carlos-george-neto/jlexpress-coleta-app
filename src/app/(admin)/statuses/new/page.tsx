@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { StatusForm } from "@/components/admin/statuses/StatusForm";
 import { Card } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
+import { apiFetch } from "@/lib/api/client";
 import Link from "next/link";
 
 export default function NewStatusPage() {
@@ -25,7 +26,7 @@ export default function NewStatusPage() {
     setError(null);
 
     try {
-      const res = await fetch("/api/statuses", {
+      const res = await apiFetch("/api/statuses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

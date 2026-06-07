@@ -10,6 +10,27 @@ interface Props {
   onPageChange: (page: number) => void;
 }
 
+function StatusTypeBadges({ status }: { status: Pick<ShipmentStatus, "is_exception" | "is_finalizer"> }) {
+  if (!status.is_exception && !status.is_finalizer) {
+    return <span className="text-gray-400 text-xs">—</span>;
+  }
+
+  return (
+    <div className="flex gap-1 flex-wrap">
+      {status.is_exception && (
+        <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
+          Exceção
+        </span>
+      )}
+      {status.is_finalizer && (
+        <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+          Finalizador
+        </span>
+      )}
+    </div>
+  );
+}
+
 export function StatusList({ statuses, pagination, onPageChange }: Props) {
   if (statuses.length === 0) {
     return (
@@ -28,7 +49,8 @@ export function StatusList({ statuses, pagination, onPageChange }: Props) {
               <th className="px-4 py-3 text-left font-medium text-gray-600">Ordem</th>
               <th className="px-4 py-3 text-left font-medium text-gray-600">Nome</th>
               <th className="px-4 py-3 text-left font-medium text-gray-600">Cor</th>
-              <th className="px-4 py-3 text-left font-medium text-gray-600">Situação</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-600">Disponibilidade</th>
+              <th className="px-4 py-3 text-left font-medium text-gray-600">Tipo</th>
               <th className="px-4 py-3 text-left font-medium text-gray-600">Ações</th>
             </tr>
           </thead>
@@ -44,18 +66,13 @@ export function StatusList({ statuses, pagination, onPageChange }: Props) {
                   {status.description && (
                     <div className="text-xs text-gray-500 mt-0.5 line-clamp-1">{status.description}</div>
                   )}
-                  <div className="flex gap-1 mt-1 flex-wrap">
-                    {status.requires_observation && (
+                  {status.requires_observation && (
+                    <div className="mt-1">
                       <span className="text-xs bg-yellow-50 text-yellow-700 border border-yellow-200 px-1.5 py-0.5 rounded">
                         Requer obs.
                       </span>
-                    )}
-                    {status.is_finalizer && (
-                      <span className="text-xs bg-purple-50 text-purple-700 border border-purple-200 px-1.5 py-0.5 rounded">
-                        Finalizador
-                      </span>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </td>
                 <td className="px-4 py-3">
                   {status.indicative_color ? (
@@ -71,6 +88,9 @@ export function StatusList({ statuses, pagination, onPageChange }: Props) {
                 </td>
                 <td className="px-4 py-3">
                   <StatusBadge status={status} />
+                </td>
+                <td className="px-4 py-3">
+                  <StatusTypeBadges status={status} />
                 </td>
                 <td className="px-4 py-3">
                   <Link

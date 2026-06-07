@@ -16,7 +16,7 @@ export async function GET() {
     const supabase = await createServerSupabaseClient();
     const { data, error } = await supabase
       .from("users")
-      .select("role")
+      .select("role, full_name, is_active")
       .eq("id", authUser.id)
       .single();
 
@@ -34,6 +34,8 @@ export async function GET() {
           id: authUser.id,
           email: authUser.email,
           role: data.role as UserRole,
+          fullName: data.full_name as string,
+          isActive: data.is_active as boolean,
         },
       },
       { status: 200 }

@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
 import { Button } from "@/components/ui/Button";
 import { ShipmentStatus, ShipmentStatusAuditLog } from "@/lib/types/status";
+import { apiFetch } from "@/lib/api/client";
 import Link from "next/link";
 
 interface StatusResponse {
@@ -48,8 +49,8 @@ export default function EditStatusPage({
     async function loadStatus() {
       try {
         const [statusRes, auditRes] = await Promise.all([
-          fetch(`/api/statuses/${statusId}`),
-          fetch(`/api/statuses/${statusId}/audit-log?limit=10`),
+          apiFetch(`/api/statuses/${statusId}`),
+          apiFetch(`/api/statuses/${statusId}/audit-log?limit=10`),
         ]);
 
         const statusData: StatusResponse = await statusRes.json();
@@ -86,7 +87,7 @@ export default function EditStatusPage({
     setSuccessMsg(null);
 
     try {
-      const res = await fetch(`/api/statuses/${statusId}`, {
+      const res = await apiFetch(`/api/statuses/${statusId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -109,7 +110,7 @@ export default function EditStatusPage({
       setStatus(result.data.status);
       setSuccessMsg("Alterações salvas com sucesso");
 
-      const auditRes = await fetch(`/api/statuses/${statusId}/audit-log?limit=10`);
+      const auditRes = await apiFetch(`/api/statuses/${statusId}/audit-log?limit=10`);
       const auditData: AuditLogResponse = await auditRes.json();
       if (auditData.success) setAuditLogs(auditData.data.items);
     } catch {
@@ -127,7 +128,7 @@ export default function EditStatusPage({
     setSuccessMsg(null);
 
     try {
-      const res = await fetch(`/api/statuses/${statusId}`, {
+      const res = await apiFetch(`/api/statuses/${statusId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ is_active: !status.is_active }),
@@ -142,7 +143,7 @@ export default function EditStatusPage({
       setStatus(result.data.status);
       setSuccessMsg(result.data.status.is_active ? "Status reativado com sucesso" : "Status desativado com sucesso");
 
-      const auditRes = await fetch(`/api/statuses/${statusId}/audit-log?limit=10`);
+      const auditRes = await apiFetch(`/api/statuses/${statusId}/audit-log?limit=10`);
       const auditData: AuditLogResponse = await auditRes.json();
       if (auditData.success) setAuditLogs(auditData.data.items);
     } catch {

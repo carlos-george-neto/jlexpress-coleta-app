@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
     // Limpar cookies de autenticação
     response.cookies.set("auth-token", "", clearCookieOptions);
     response.cookies.set("refresh-token", "", clearCookieOptions);
+    response.cookies.set("user-role", "", clearCookieOptions);
 
     return response;
   } catch (error) {

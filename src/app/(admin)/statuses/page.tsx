@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
 import { ShipmentStatus, PaginationMeta } from "@/lib/types/status";
+import { apiFetch } from "@/lib/api/client";
 import Link from "next/link";
 
 interface Filters {
@@ -54,7 +55,7 @@ export default function StatusesPage() {
         if (filters.is_exception) params.set("is_exception", filters.is_exception);
         if (filters.is_finalizer) params.set("is_finalizer", filters.is_finalizer);
 
-        const res = await fetch(`/api/statuses?${params}`);
+        const res = await apiFetch(`/api/statuses?${params}`);
         const data: ListResponse = await res.json();
 
         if (!data.success) {

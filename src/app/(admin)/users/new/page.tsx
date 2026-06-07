@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { UserForm } from "@/components/admin/users/UserForm";
 import { Card } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
+import { apiFetch } from "@/lib/api/client";
 import Link from "next/link";
 export default function NewUserPage() {
   const router = useRouter();
@@ -16,7 +17,7 @@ export default function NewUserPage() {
     setError(null);
 
     try {
-      const res = await fetch("/api/users", {
+      const res = await apiFetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

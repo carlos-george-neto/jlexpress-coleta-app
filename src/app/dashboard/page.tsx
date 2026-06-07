@@ -1,40 +1,33 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getCurrentUser } from "@/lib/supabase/auth";
-import { User } from "@/lib/types/auth";
+import { apiFetch } from "@/lib/api/client";
 import { Card } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
 import { Header } from "@/components/layout/Header";
 
+interface MeUser {
+  id: string;
+  email: string;
+  role: string;
+  fullName: string;
+  isActive: boolean;
+}
+
 export default function DashboardPage() {
-  const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<MeUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const currentUser = await getCurrentUser();
-
-        if (!currentUser) {
-          router.push("/login");
-          return;
-        }
-
-        setUser(currentUser);
-      } catch (error) {
-        console.error("Erro ao carregar usuário:", error);
-        router.push("/login");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadUser();
-  }, [router]);
+    apiFetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) setUser(data.user);
+      })
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
+  }, []);
 
   if (isLoading) {
     return (
@@ -54,7 +47,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Header role={user.role} />
 
       <main className="max-w-6xl mx-auto px-4 py-8">
         <Card className="p-6">
@@ -81,7 +74,7 @@ export default function DashboardPage() {
               <Typography variant="small" className="text-gray-600">
                 Tipo de Perfil
               </Typography>
-              <Typography className="capitalize">{user.profileType}</Typography>
+              <Typography className="capitalize">{user.role}</Typography>
             </div>
 
             <div>
@@ -94,7 +87,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {user.profileType === "admin" && (
+          {user.role === "admin" && (
             <div className="mt-6 pt-6 border-t border-gray-200 flex flex-col gap-3 sm:flex-row sm:gap-6">
               <Link
                 href="/users"

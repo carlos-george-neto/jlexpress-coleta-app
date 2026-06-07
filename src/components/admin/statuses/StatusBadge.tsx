@@ -3,7 +3,7 @@
 import { ShipmentStatus } from "@/lib/types/status";
 
 interface Props {
-  status: Pick<ShipmentStatus, "is_active" | "is_exception" | "indicative_color">;
+  status: Pick<ShipmentStatus, "is_active">;
 }
 
 export function StatusBadge({ status }: Props) {
@@ -15,26 +15,8 @@ export function StatusBadge({ status }: Props) {
     );
   }
 
-  if (status.is_exception) {
-    const bg = status.indicative_color ? `${status.indicative_color}20` : undefined;
-    const text = status.indicative_color ?? "#EF4444";
-    return (
-      <span
-        className="inline-block px-2 py-0.5 rounded-full text-xs font-medium"
-        style={bg ? { backgroundColor: bg, color: text } : { backgroundColor: "#FEE2E2", color: "#DC2626" }}
-      >
-        Exceção
-      </span>
-    );
-  }
-
-  const bg = status.indicative_color ? `${status.indicative_color}20` : undefined;
-  const text = status.indicative_color ?? "#16A34A";
   return (
-    <span
-      className="inline-block px-2 py-0.5 rounded-full text-xs font-medium"
-      style={bg ? { backgroundColor: bg, color: text } : { backgroundColor: "#DCFCE7", color: "#16A34A" }}
-    >
+    <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
       Ativo
     </span>
   );
