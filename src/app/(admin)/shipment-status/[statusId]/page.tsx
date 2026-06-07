@@ -49,8 +49,8 @@ export default function EditStatusPage({
     async function loadStatus() {
       try {
         const [statusRes, auditRes] = await Promise.all([
-          apiFetch(`/api/statuses/${statusId}`),
-          apiFetch(`/api/statuses/${statusId}/audit-log?limit=10`),
+          apiFetch(`/api/shipment-status/${statusId}`),
+          apiFetch(`/api/shipment-status/${statusId}/audit-log?limit=10`),
         ]);
 
         const statusData: StatusResponse = await statusRes.json();
@@ -87,7 +87,7 @@ export default function EditStatusPage({
     setSuccessMsg(null);
 
     try {
-      const res = await apiFetch(`/api/statuses/${statusId}`, {
+      const res = await apiFetch(`/api/shipment-status/${statusId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -110,7 +110,7 @@ export default function EditStatusPage({
       setStatus(result.data.status);
       setSuccessMsg("Alterações salvas com sucesso");
 
-      const auditRes = await apiFetch(`/api/statuses/${statusId}/audit-log?limit=10`);
+      const auditRes = await apiFetch(`/api/shipment-status/${statusId}/audit-log?limit=10`);
       const auditData: AuditLogResponse = await auditRes.json();
       if (auditData.success) setAuditLogs(auditData.data.items);
     } catch {
@@ -128,7 +128,7 @@ export default function EditStatusPage({
     setSuccessMsg(null);
 
     try {
-      const res = await apiFetch(`/api/statuses/${statusId}`, {
+      const res = await apiFetch(`/api/shipment-status/${statusId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ is_active: !status.is_active }),
@@ -143,7 +143,7 @@ export default function EditStatusPage({
       setStatus(result.data.status);
       setSuccessMsg(result.data.status.is_active ? "Status reativado com sucesso" : "Status desativado com sucesso");
 
-      const auditRes = await apiFetch(`/api/statuses/${statusId}/audit-log?limit=10`);
+      const auditRes = await apiFetch(`/api/shipment-status/${statusId}/audit-log?limit=10`);
       const auditData: AuditLogResponse = await auditRes.json();
       if (auditData.success) setAuditLogs(auditData.data.items);
     } catch {
@@ -161,7 +161,7 @@ export default function EditStatusPage({
     return (
       <div className="text-center py-10">
         <p className="text-red-500 mb-4">{error || "Status não encontrado"}</p>
-        <Link href="/statuses" className="text-blue-600 hover:text-blue-800">
+        <Link href="/shipment-status" className="text-blue-600 hover:text-blue-800">
           Voltar à listagem
         </Link>
       </div>
@@ -172,7 +172,7 @@ export default function EditStatusPage({
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="flex items-center gap-3">
         <Link
-          href="/statuses"
+          href="/shipment-status"
           className="text-sm text-blue-600 hover:text-blue-800"
           aria-label="Voltar para a listagem de status"
         >

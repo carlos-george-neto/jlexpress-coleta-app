@@ -55,7 +55,7 @@ export default function StatusesPage() {
         if (filters.is_exception) params.set("is_exception", filters.is_exception);
         if (filters.is_finalizer) params.set("is_finalizer", filters.is_finalizer);
 
-        const res = await apiFetch(`/api/statuses?${params}`);
+        const res = await apiFetch(`/api/shipment-status?${params}`);
         const data: ListResponse = await res.json();
 
         if (!data.success) {
@@ -86,7 +86,7 @@ export default function StatusesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <Typography variant="h2">Status de Encomenda</Typography>
-        <Link href="/statuses/new" aria-label="Criar novo status de encomenda">
+        <Link href="/shipment-status/new" aria-label="Criar novo status de encomenda">
           <Button>+ Novo Status</Button>
         </Link>
       </div>

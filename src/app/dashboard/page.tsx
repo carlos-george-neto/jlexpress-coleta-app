@@ -87,24 +87,33 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {user.role === "admin" && (
-            <div className="mt-6 pt-6 border-t border-gray-200 flex flex-col gap-3 sm:flex-row sm:gap-6">
-              <Link
-                href="/users"
-                className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
-                aria-label="Ir para a tela de gestão de usuários"
-              >
-                Gerenciar Usuários
-              </Link>
-              <Link
-                href="/statuses"
-                className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
-                aria-label="Ir para a tela de gestão de status de encomenda"
-              >
-                Gerenciar Status
-              </Link>
-            </div>
-          )}
+          <div className="mt-6 pt-6 border-t border-gray-200 flex flex-col gap-3 sm:flex-row sm:gap-6">
+            <Link
+              href="/encomendas"
+              className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
+              aria-label="Ir para a tela de gestão de encomendas"
+            >
+              Gerenciar Encomendas
+            </Link>
+            {user.role === "admin" && (
+              <>
+                <Link
+                  href="/users"
+                  className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
+                  aria-label="Ir para a tela de gestão de usuários"
+                >
+                  Gerenciar Usuários
+                </Link>
+                <Link
+                  href="/shipment-status"
+                  className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
+                  aria-label="Ir para a tela de gestão de status de encomenda"
+                >
+                  Gerenciar Status
+                </Link>
+              </>
+            )}
+          </div>
         </Card>
       </main>
     </div>

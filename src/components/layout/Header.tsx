@@ -49,10 +49,11 @@ export function Header({ role }: Props) {
 
         <nav className="flex items-center gap-5 flex-1" aria-label="Navegação principal">
           {navLink("/dashboard", "Dashboard")}
+          {(role === "admin" || role === "collector") && navLink("/encomendas", "Encomendas")}
           {role === "admin" && (
             <>
               {navLink("/users", "Usuários")}
-              {navLink("/statuses", "Status")}
+              {navLink("/shipment-status", "Status")}
             </>
           )}
         </nav>
