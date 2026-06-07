@@ -2,36 +2,53 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { UserForm } from "@/components/admin/users/UserForm";
+import { StatusForm } from "@/components/admin/statuses/StatusForm";
 import { Card } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
 import { apiFetch } from "@/lib/api/client";
 import Link from "next/link";
-export default function NewUserPage() {
+
+export default function NewStatusPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(data: { email: string; full_name: string; role: string; password: string }) {
+  async function handleSubmit(data: {
+    name: string;
+    description: string;
+    flow_order: number;
+    requires_observation: boolean;
+    is_exception: boolean;
+    is_finalizer: boolean;
+    indicative_color: string;
+  }) {
     setIsLoading(true);
     setError(null);
 
     try {
-      const res = await apiFetch("/api/users", {
+      const res = await apiFetch("/api/statuses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          name: data.name,
+          description: data.description || null,
+          flow_order: data.flow_order,
+          requires_observation: data.requires_observation,
+          is_exception: data.is_exception,
+          is_finalizer: data.is_finalizer,
+          indicative_color: data.indicative_color || null,
+        }),
       });
 
       const result = await res.json();
 
       if (!result.success) {
-        setError(result.message || "Erro ao criar usuário");
+        setError(result.message || "Erro ao criar status");
         setIsLoading(false);
         return;
       }
 
-      router.push("/users");
+      router.push("/statuses");
     } catch {
       setError("Falha ao conectar ao servidor");
       setIsLoading(false);
@@ -41,10 +58,14 @@ export default function NewUserPage() {
   return (
     <div className="max-w-lg mx-auto">
       <div className="flex items-center gap-3 mb-6">
-        <Link href="/users" className="text-sm text-blue-600 hover:text-blue-800">
+        <Link
+          href="/statuses"
+          className="text-sm text-blue-600 hover:text-blue-800"
+          aria-label="Voltar para a listagem de status"
+        >
           ← Voltar
         </Link>
-        <Typography variant="h2">Novo Usuário</Typography>
+        <Typography variant="h2">Novo Status</Typography>
       </div>
 
       <Card className="p-6">
@@ -53,11 +74,7 @@ export default function NewUserPage() {
             {error}
           </div>
         )}
-        <UserForm
-          mode="create"
-          onSubmit={handleSubmit}
-          isLoading={isLoading}
-        />
+        <StatusForm mode="create" onSubmit={handleSubmit} isLoading={isLoading} />
       </Card>
     </div>
   );

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
 import { UserRecord, PaginationMeta } from "@/lib/types/user";
+import { apiFetch } from "@/lib/api/client";
 import Link from "next/link";
 
 type SortBy = "email" | "full_name" | "created_at" | "is_active";
@@ -47,7 +48,7 @@ export default function UsersPage() {
         });
         if (search) params.set("search", search);
 
-        const res = await fetch(`/api/users?${params}`);
+        const res = await apiFetch(`/api/users?${params}`);
         const data: ListResponse = await res.json();
 
         if (!data.success) {

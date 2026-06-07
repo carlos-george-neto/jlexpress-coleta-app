@@ -101,13 +101,111 @@ Permitir administração de usuários do sistema.
 
 ---
 
-# ÉPICO 3 — Gestão de Encomendas
+# ÉPICO 3 - Gestão de Status da Encomenda
+
+### Objetivo
+
+Permitir parametrização dinâmica dos status operacionais.
+
+## Feature 3.1 — Criar entidade Status da Encomenda
+
+  - Criar tabela `shipment_status`
+  - Criar migrations
+
+### Campos do Status
+
+| Campo | Tipo |
+|---------|---------|
+| Nome | Texto |
+| Descrição | Texto |
+| Ativo | Boolean |
+| Exige Observação | Boolean |
+| Status de Exceção | Boolean |
+| Status Finalizador | Boolean |
+| Ordem do Fluxo | Número |
+| Cor Indicativa | Texto |
+
+# Sugestão de Status Iniciais
+
+| Status | Exceção | Exige Observação |
+|----------|----------|----------|
+| Pendente de Coleta | Não | Não |
+| Em Coleta | Não | Não |
+| Coletado | Não | Não |
+| Coleta Parcial | Sim | Sim |
+| Não Coletado | Sim | Sim |
+| Cancelado | Sim | Sim |
+| Aguardando Validação | Não | Não |
+
+### Feature 3.2 — Cadastro de Status
+
+#### Tasks
+
+- Criar endpoint POST
+- Criar tela administrativa
+- Criar roteamento na pagina Dashboard
+- Validar duplicidade de nome
+- Validar campos obrigatórios
+- Criar auditoria
+
+### Feature 3.3 — Listagem de Status
+
+#### Tasks
+
+- Criar paginação
+- Criar filtros:
+  - ativos
+  - inativos
+  - exceção
+  - finalizadores
+- Criar ordenação por fluxo
+- Criar busca textual
+
+### Feature 3.4 — Edição de Status
+
+#### Tasks
+
+- Criar endpoint PUT/PATCH
+- Permitir alteração de:
+  - nome
+  - descrição
+  - flags
+  - ordenação
+  - cor
+- Criar auditoria
+
+### Feature 3.5 — Desativação de Status
+
+#### Tasks
+
+- Implementar soft delete
+- Bloquear uso de status inativos
+- Exibir indicador visual de inativo
+- Validar impacto histórico
+
+### Regras de Negócio dos Status
+
+| Código | Regra |
+|----------|----------|
+| RN010 | Apenas administradores podem gerenciar status |
+| RN011 | Status podem ser ativados/inativados |
+| RN012 | Status inativos não podem ser utilizados |
+| RN013 | Não permitir exclusão física |
+| RN014 | Status possuem ordenação de fluxo |
+| RN015 | Alguns status exigem observação |
+| RN016 | Alguns status representam exceção |
+| RN017 | Alguns status encerram fluxo |
+
+
+---
+
+# ÉPICO 4 — Gestão de Encomendas
 
 ## Objetivo
 
 Controlar encomendas disponíveis para coleta.
 
-## Feature 3.1 — Cadastro de Encomendas
+## Feature 4.1 — Cadastro de Encomendas
 
 ### Campos
 
@@ -136,93 +234,15 @@ Controlar encomendas disponíveis para coleta.
 - Implementar soft delete
 - Criar auditoria
 
-## Feature 3.2 — Gestão de Status da Encomenda
-
-### Objetivo
-
-Permitir parametrização dinâmica dos status operacionais.
-
-### Campos do Status
-
-| Campo | Tipo |
-|---------|---------|
-| Nome | Texto |
-| Descrição | Texto |
-| Ativo | Boolean |
-| Exige Observação | Boolean |
-| Status de Exceção | Boolean |
-| Status Finalizador | Boolean |
-| Ordem do Fluxo | Número |
-| Cor Indicativa | Texto |
-
-### Feature 3.2.1 — Cadastro de Status
-
-#### Tasks
-
-- Criar tabela `shipment_status`
-- Criar endpoint POST
-- Criar tela administrativa
-- Validar duplicidade de nome
-- Validar campos obrigatórios
-- Criar auditoria
-
-### Feature 3.2.2 — Listagem de Status
-
-#### Tasks
-
-- Criar paginação
-- Criar filtros:
-  - ativos
-  - inativos
-  - exceção
-  - finalizadores
-- Criar ordenação por fluxo
-- Criar busca textual
-
-### Feature 3.2.3 — Edição de Status
-
-#### Tasks
-
-- Criar endpoint PUT/PATCH
-- Permitir alteração de:
-  - nome
-  - descrição
-  - flags
-  - ordenação
-  - cor
-- Criar auditoria
-
-### Feature 3.2.4 — Desativação de Status
-
-#### Tasks
-
-- Implementar soft delete
-- Bloquear uso de status inativos
-- Exibir indicador visual de inativo
-- Validar impacto histórico
-
-### Regras de Negócio dos Status
-
-| Código | Regra |
-|----------|----------|
-| RN010 | Apenas administradores podem gerenciar status |
-| RN011 | Status podem ser ativados/inativados |
-| RN012 | Status inativos não podem ser utilizados |
-| RN013 | Não permitir exclusão física |
-| RN014 | Status possuem ordenação de fluxo |
-| RN015 | Alguns status exigem observação |
-| RN016 | Alguns status representam exceção |
-| RN017 | Alguns status encerram fluxo |
-
 ---
 
-# ÉPICO 4 — Consulta Operacional de Coletas
+# ÉPICO 5 — Consulta Operacional de Coletas
 
 ## Objetivo
 
 Permitir que coletores consultem cargas disponíveis.
 
-## Feature 4.1 — Consulta de Encomendas
+## Feature 5.1 — Consulta de Encomendas
 
 ### Filtros
 
@@ -241,7 +261,7 @@ Permitir que coletores consultem cargas disponíveis.
 - Criar busca textual
 - Criar cards responsivos mobile
 
-## Feature 4.2 — Visualização Detalhada
+## Feature 5.2 — Visualização Detalhada
 
 ### Tasks
 
@@ -253,13 +273,13 @@ Permitir que coletores consultem cargas disponíveis.
 
 ---
 
-# ÉPICO 5 — Processo de Coleta
+# ÉPICO 6 — Processo de Coleta
 
 ## Objetivo
 
 Permitir atualização operacional das encomendas.
 
-## Feature 5.1 — Atualização de Status
+## Feature 6.1 — Atualização de Status
 
 ### Tasks
 
@@ -284,7 +304,7 @@ Permitir atualização operacional das encomendas.
 | RN008 | Sistema deve funcionar mobile/web |
 | RN009 | Todas alterações devem ser auditáveis |
 
-## Feature 5.2 — Tratativa de Exceções
+## Feature 6.2 — Tratativa de Exceções
 
 ### Cenários
 
@@ -302,13 +322,13 @@ Permitir atualização operacional das encomendas.
 
 ---
 
-# ÉPICO 6 — Responsividade e UX
+# ÉPICO 7 — Responsividade e UX
 
 ## Objetivo
 
 Garantir experiência fluida em web e mobile.
 
-## Feature 6.1 — Responsividade
+## Feature 7.1 — Responsividade
 
 ### Tasks
 
@@ -318,7 +338,7 @@ Garantir experiência fluida em web e mobile.
 - Validar usabilidade touch
 - Ajustar breakpoints
 
-## Feature 6.2 — Experiência do Usuário
+## Feature 7.2 — Experiência do Usuário
 
 ### Tasks
 
@@ -331,13 +351,13 @@ Garantir experiência fluida em web e mobile.
 
 ---
 
-# ÉPICO 7 — Auditoria e Rastreabilidade
+# ÉPICO 8 — Auditoria e Rastreabilidade
 
 ## Objetivo
 
 Garantir rastreabilidade operacional.
 
-## Feature 7.1 — Histórico de Alterações
+## Feature 8.1 — Histórico de Alterações
 
 ### Tasks
 
@@ -401,14 +421,3 @@ Além disso:
 
 ---
 
-# Sugestão de Status Iniciais
-
-| Status | Exceção | Exige Observação |
-|----------|----------|----------|
-| Pendente de Coleta | Não | Não |
-| Em Coleta | Não | Não |
-| Coletado | Não | Não |
-| Coleta Parcial | Sim | Sim |
-| Não Coletado | Sim | Sim |
-| Cancelado | Sim | Sim |
-| Aguardando Validação | Não | Não |

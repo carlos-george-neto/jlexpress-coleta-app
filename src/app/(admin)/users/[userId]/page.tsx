@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/Card";
 import { Typography } from "@/components/ui/Typography";
 import { Button } from "@/components/ui/Button";
 import { UserRecord, UserAuditLog, UserRole } from "@/lib/types/user";
+import { apiFetch } from "@/lib/api/client";
 import Link from "next/link";
 
 interface AuditLogResponse {
@@ -44,7 +45,7 @@ export default function EditUserPage({
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/auth/me")
+    apiFetch("/api/auth/me")
       .then((r) => r.json())
       .then((data) => {
         if (data.success) setCurrentUser({ id: data.user.id, role: data.user.role });
@@ -56,8 +57,8 @@ export default function EditUserPage({
     async function loadUser() {
       try {
         const [userRes, auditRes] = await Promise.all([
-          fetch(`/api/users/${userId}`),
-          fetch(`/api/users/${userId}/audit-log?limit=10`),
+          apiFetch(`/api/users/${userId}`),
+          apiFetch(`/api/users/${userId}/audit-log?limit=10`),
         ]);
 
         const userData = await userRes.json();
@@ -86,7 +87,7 @@ export default function EditUserPage({
     setSuccessMsg(null);
 
     try {
-      const res = await fetch(`/api/users/${userId}`, {
+      const res = await apiFetch(`/api/users/${userId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -113,7 +114,7 @@ export default function EditUserPage({
     setError(null);
 
     try {
-      const res = await fetch(`/api/users/${userId}/reset-password`, {
+      const res = await apiFetch(`/api/users/${userId}/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
@@ -140,7 +141,7 @@ export default function EditUserPage({
     setError(null);
 
     try {
-      const res = await fetch(`/api/users/${userId}`, {
+      const res = await apiFetch(`/api/users/${userId}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reactivate: user.is_active === false }),
