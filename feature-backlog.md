@@ -236,40 +236,25 @@ Controlar encomendas disponíveis para coleta.
 
 ---
 
-# ÉPICO 5 — Consulta Operacional de Coletas
+# ÉPICO 5 — Dashboard Operacional de Coletas
 
 ## Objetivo
 
 Permitir que coletores consultem cargas disponíveis.
 
-## Feature 5.1 — Consulta de Encomendas
-
-### Filtros
-
-- Transportadora
-- Data início chegada
-- Data fim chegada
-- Status coleta
+## Feature 5.1 — Dashboard de Encomendas
 
 ### Tasks
 
-- Criar tela de listagem
-- Criar paginação
-- Implementar filtros
-- Implementar ordenação
-- Criar indicadores visuais
-- Criar busca textual
-- Criar cards responsivos mobile
-
-## Feature 5.2 — Visualização Detalhada
-
-### Tasks
-
-- Exibir detalhes da encomenda
-- Exibir histórico
-- Exibir observações
-- Exibir data da coleta
-- Exibir timeline operacional
+- Criar tela de Dashboard seguindo os padrões de layout para esse tipo de tela
+- Exibir todas as coletas com status Pendente de Coleta 
+- Exibir totas as coletas cujo o responsável seja o usuário logado
+- Implementar ordenação por data de chegada
+- Os registros de encomenda deverão ter vizualização rapida em um popup 
+- Visualização detalhada com link direto para Edição da coleta
+- Na edição da coleta pelo coletor, deverá ser permitido conforme regra ja implementada
+- Separar os registro de acordo com sua cor especifica de Status
+- Caso o usuário for o Admin, o dashboard deverá exibir no lugar das encomendas, um dashboard com as atividasdes dos coletores de acordo com data de chegada das encomendas
 
 ---
 
