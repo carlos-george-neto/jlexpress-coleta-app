@@ -1,48 +1,19 @@
 import { NextRequest } from "next/server";
-import { createServerSupabaseClient, getServerUser } from "@/lib/supabase/server";
 import { getStatusById, updateStatus } from "@/lib/services/status.service";
 import { ApiErrors } from "@/lib/api/response";
 import { NextResponse } from "next/server";
+import { resolveAdminUser, resolveAuthenticatedUser } from "@/lib/api/auth";
 
 const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}$/;
-
-async function getAdminUser() {
-  const user = await getServerUser();
-  if (!user) return null;
-
-  const supabase = await createServerSupabaseClient();
-  const { data: profile } = await supabase
-    .from("users")
-    .select("id, role, is_active")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile || !profile.is_active || profile.role !== "admin") return null;
-  return profile as { id: string; role: string; is_active: boolean };
-}
-
-async function getAuthenticatedUser() {
-  const user = await getServerUser();
-  if (!user) return null;
-
-  const supabase = await createServerSupabaseClient();
-  const { data: profile } = await supabase
-    .from("users")
-    .select("id, role, is_active")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile || !profile.is_active) return null;
-  return profile as { id: string; role: string; is_active: boolean };
-}
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ statusId: string }> }
 ) {
   try {
-    const authUser = await getAuthenticatedUser();
-    if (!authUser) return ApiErrors.unauthorized();
+    const auth = await resolveAuthenticatedUser();
+    if (!auth.ok) return ApiErrors.unauthorized();
+    const authUser = auth.profile;
 
     const { statusId } = await params;
     const status = await getStatusById(statusId);
@@ -50,7 +21,7 @@ export async function GET(
 
     return NextResponse.json({ success: true, data: { status } });
   } catch (err) {
-    console.error("GET /api/statuses/[statusId] error:", err);
+    console.error("GET /api/shipment-status/[statusId] error:", err);
     return ApiErrors.internal();
   }
 }
@@ -60,8 +31,11 @@ export async function PATCH(
   { params }: { params: Promise<{ statusId: string }> }
 ) {
   try {
-    const admin = await getAdminUser();
-    if (!admin) return ApiErrors.forbidden();
+    const auth = await resolveAdminUser();
+    if (!auth.ok) {
+      return auth.reason === "UNAUTHENTICATED" ? ApiErrors.unauthorized() : ApiErrors.forbidden();
+    }
+    const admin = auth.profile;
 
     const { statusId } = await params;
     const current = await getStatusById(statusId);
@@ -95,7 +69,7 @@ export async function PATCH(
     if (error.code === "STATUS_NOT_FOUND") {
       return ApiErrors.notFound("Status");
     }
-    console.error("PATCH /api/statuses/[statusId] error:", err);
+    console.error("PATCH /api/shipment-status/[statusId] error:", err);
     return ApiErrors.internal();
   }
 }

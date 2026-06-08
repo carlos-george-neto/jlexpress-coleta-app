@@ -26,7 +26,7 @@ export default function NewStatusPage() {
     setError(null);
 
     try {
-      const res = await apiFetch("/api/statuses", {
+      const res = await apiFetch("/api/shipment-status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -48,7 +48,7 @@ export default function NewStatusPage() {
         return;
       }
 
-      router.push("/statuses");
+      router.push("/shipment-status");
     } catch {
       setError("Falha ao conectar ao servidor");
       setIsLoading(false);
@@ -59,7 +59,7 @@ export default function NewStatusPage() {
     <div className="max-w-lg mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <Link
-          href="/statuses"
+          href="/shipment-status"
           className="text-sm text-blue-600 hover:text-blue-800"
           aria-label="Voltar para a listagem de status"
         >

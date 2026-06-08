@@ -1,29 +1,16 @@
 import { NextRequest } from "next/server";
-import { createServerSupabaseClient, getServerUser } from "@/lib/supabase/server";
 import { createUserSchema, listUsersQuerySchema } from "@/lib/schemas/user";
 import { createUser, listUsers } from "@/lib/services/user.service";
 import { apiCreated, apiPaginated, ApiErrors } from "@/lib/api/response";
-
-async function getAdminUser() {
-  const user = await getServerUser();
-  if (!user) return null;
-
-  const supabase = await createServerSupabaseClient();
-  const { data: profile } = await supabase
-    .from("users")
-    .select("id, role, is_active")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile || !profile.is_active || profile.role !== "admin") return null;
-
-  return profile as { id: string; role: string; is_active: boolean };
-}
+import { resolveAdminUser } from "@/lib/api/auth";
 
 export async function POST(request: NextRequest) {
   try {
-    const admin = await getAdminUser();
-    if (!admin) return ApiErrors.forbidden();
+    const auth = await resolveAdminUser();
+    if (!auth.ok) {
+      return auth.reason === "UNAUTHENTICATED" ? ApiErrors.unauthorized() : ApiErrors.forbidden();
+    }
+    const admin = auth.profile;
 
     const body = await request.json();
     const validation = createUserSchema.safeParse(body);
@@ -49,8 +36,11 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const admin = await getAdminUser();
-    if (!admin) return ApiErrors.forbidden();
+    const auth = await resolveAdminUser();
+    if (!auth.ok) {
+      return auth.reason === "UNAUTHENTICATED" ? ApiErrors.unauthorized() : ApiErrors.forbidden();
+    }
+    const admin = auth.profile;
 
     const { searchParams } = new URL(request.url);
     const rawQuery = Object.fromEntries(searchParams.entries());

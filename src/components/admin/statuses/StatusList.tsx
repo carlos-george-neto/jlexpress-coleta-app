@@ -94,7 +94,7 @@ export function StatusList({ statuses, pagination, onPageChange }: Props) {
                 </td>
                 <td className="px-4 py-3">
                   <Link
-                    href={`/statuses/${status.id}`}
+                    href={`/shipment-status/${status.id}`}
                     className="text-blue-600 hover:text-blue-800 font-medium"
                     aria-label={`Editar status ${status.name}`}
                   >

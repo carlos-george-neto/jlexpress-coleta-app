@@ -1,5 +1,4 @@
 import { NextRequest } from "next/server";
-import { createServerSupabaseClient, getServerUser } from "@/lib/supabase/server";
 import { updateUserSchema } from "@/lib/schemas/user";
 import {
   getUserById,
@@ -8,29 +7,18 @@ import {
   activateUser,
 } from "@/lib/services/user.service";
 import { apiSuccess, ApiErrors } from "@/lib/api/response";
-
-async function getAdminUser(supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>) {
-  const user = await getServerUser();
-  if (!user) return null;
-
-  const { data: profile } = await supabase
-    .from("users")
-    .select("id, role, is_active")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile || !profile.is_active || profile.role !== "admin") return null;
-  return profile as { id: string; role: string; is_active: boolean };
-}
+import { resolveAdminUser } from "@/lib/api/auth";
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const admin = await getAdminUser(supabase);
-    if (!admin) return ApiErrors.forbidden();
+    const auth = await resolveAdminUser();
+    if (!auth.ok) {
+      return auth.reason === "UNAUTHENTICATED" ? ApiErrors.unauthorized() : ApiErrors.forbidden();
+    }
+    const admin = auth.profile;
 
     const { userId } = await params;
     const user = await getUserById(userId);
@@ -48,9 +36,11 @@ export async function PUT(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const admin = await getAdminUser(supabase);
-    if (!admin) return ApiErrors.forbidden();
+    const auth = await resolveAdminUser();
+    if (!auth.ok) {
+      return auth.reason === "UNAUTHENTICATED" ? ApiErrors.unauthorized() : ApiErrors.forbidden();
+    }
+    const admin = auth.profile;
 
     const { userId } = await params;
     const body = await request.json();
@@ -81,9 +71,11 @@ export async function DELETE(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const admin = await getAdminUser(supabase);
-    if (!admin) return ApiErrors.forbidden();
+    const auth = await resolveAdminUser();
+    if (!auth.ok) {
+      return auth.reason === "UNAUTHENTICATED" ? ApiErrors.unauthorized() : ApiErrors.forbidden();
+    }
+    const admin = auth.profile;
 
     const { userId } = await params;
 

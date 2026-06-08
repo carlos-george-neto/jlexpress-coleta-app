@@ -1,44 +1,17 @@
 import { NextRequest } from "next/server";
-import { createServerSupabaseClient, getServerUser } from "@/lib/supabase/server";
 import { createStatus, listStatuses } from "@/lib/services/status.service";
 import { apiCreated, apiPaginated, ApiErrors } from "@/lib/api/response";
+import { resolveAdminUser, resolveAuthenticatedUser } from "@/lib/api/auth";
 
 const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}$/;
 
-async function getAdminUser() {
-  const user = await getServerUser();
-  if (!user) return null;
-
-  const supabase = await createServerSupabaseClient();
-  const { data: profile } = await supabase
-    .from("users")
-    .select("id, role, is_active")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile || !profile.is_active || profile.role !== "admin") return null;
-  return profile as { id: string; role: string; is_active: boolean };
-}
-
-async function getAuthenticatedUser() {
-  const user = await getServerUser();
-  if (!user) return null;
-
-  const supabase = await createServerSupabaseClient();
-  const { data: profile } = await supabase
-    .from("users")
-    .select("id, role, is_active")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile || !profile.is_active) return null;
-  return profile as { id: string; role: string; is_active: boolean };
-}
-
 export async function POST(request: NextRequest) {
   try {
-    const admin = await getAdminUser();
-    if (!admin) return ApiErrors.forbidden();
+    const auth = await resolveAdminUser();
+    if (!auth.ok) {
+      return auth.reason === "UNAUTHENTICATED" ? ApiErrors.unauthorized() : ApiErrors.forbidden();
+    }
+    const admin = auth.profile;
 
     const body = await request.json();
     const { name, description, requires_observation, is_exception, is_finalizer, flow_order, indicative_color } = body;
@@ -70,15 +43,16 @@ export async function POST(request: NextRequest) {
     if (error.code === "NAME_ALREADY_EXISTS") {
       return ApiErrors.validation({ message: "Nome já cadastrado para outro status" });
     }
-    console.error("POST /api/statuses error:", err);
+    console.error("POST /api/shipment-status error:", err);
     return ApiErrors.internal();
   }
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const authUser = await getAuthenticatedUser();
-    if (!authUser) return ApiErrors.unauthorized();
+    const auth = await resolveAuthenticatedUser();
+    if (!auth.ok) return ApiErrors.unauthorized();
+    const authUser = auth.profile;
 
     const { searchParams } = new URL(request.url);
     const isAdmin = authUser.role === "admin";
@@ -103,7 +77,7 @@ export async function GET(request: NextRequest) {
     const result = await listStatuses({ page, limit, search, is_active, is_exception, is_finalizer, sort_by: sortBy, sort_order: sortOrder });
     return apiPaginated(result.items, result.pagination);
   } catch (err) {
-    console.error("GET /api/statuses error:", err);
+    console.error("GET /api/shipment-status error:", err);
     return ApiErrors.internal();
   }
 }
